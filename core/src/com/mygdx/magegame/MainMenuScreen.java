@@ -5,6 +5,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
+import static com.mygdx.magegame.Consts.window_h;
+import static com.mygdx.magegame.Consts.window_w;
+
 public class MainMenuScreen implements Screen{
     final MageGame game;
 
@@ -15,7 +18,7 @@ public class MainMenuScreen implements Screen{
         this.game = game;
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
+        camera.setToOrtho(false, window_w, window_h);
     }
 
     @Override
