@@ -24,6 +24,8 @@ public class GameScreen implements Screen {
     boolean was_tile_set = true; // Был ли уставновлен тайл
     // По умолчанию установлен в true, чтобы первый клик не спавнил тайл
 
+    boolean need_to_draw_grid = true; // Нужно ли отрисовывать сетку
+
     // debug-штуки:
     TextObject debug_tool;
     TextObject debug_tool2;
@@ -94,22 +96,23 @@ public class GameScreen implements Screen {
         }
 
         // Отрисовка сетки:
-        Pixmap pixmap = new Pixmap( window_w, window_h, Pixmap.Format.RGBA8888 ); // Штука для хранения пикселей
-        pixmap.setColor( 0.8f, 0.8f, 0.8f, 0.75f );
+        if (need_to_draw_grid) {
+            Pixmap pixmap = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888); // Штука для хранения пикселей
+            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
 
-        // Горизонтальные линии
-        for(int y=0; y<= window_h; y+=tileSet.size){
-            pixmap.drawLine(0,y,window_w, y);
+            // Горизонтальные линии
+            for (int y = 0; y <= window_h; y += tileSet.size) {
+                pixmap.drawLine(0, y, window_w, y);
+            }
+            // Вертикальные линии
+            for (int x = 0; x <= window_w; x += tileSet.size) {
+                pixmap.drawLine(x, 0, x, window_h);
+            }
+            // TODO: двигать сетку относительно положения камеры
+            Texture pixmaptex = new Texture(pixmap); // Перевод в текстуру
+            pixmap.dispose();
+            game.batch.draw(pixmaptex, 0 - (float) window_w / 2, -window_h + (float) window_h / 2); // Отрисовка сетки
         }
-        // Вертикальные линии
-        for(int x=0;x<=window_w; x+=tileSet.size){
-            pixmap.drawLine(x,0,x,window_h);
-        }
-        // TODO: двигать сетку относительно положения камеры
-        Texture pixmaptex = new Texture( pixmap ); // Перевод в текстуру
-        pixmap.dispose();
-        game.batch.draw(pixmaptex,0 - (float)window_w/2,-window_h + (float)window_h/2); // Отрисовка сетки
-
         game.batch.end();
 
 
@@ -151,21 +154,24 @@ public class GameScreen implements Screen {
         }
 
         // Обработка нажатий на клавиатуру
-        if (Gdx.input.isKeyPressed(Input.Keys.NUM_0)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
             place_tile.set_id(0);
             id_of_place_tile = 0;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
             place_tile.set_id(1);
             id_of_place_tile = 1;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.NUM_2)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
             place_tile.set_id(2);
             id_of_place_tile = 2;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.NUM_3)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
             place_tile.set_id(3);
             id_of_place_tile = 3;
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
+            need_to_draw_grid = !need_to_draw_grid;
         }
     }
 
