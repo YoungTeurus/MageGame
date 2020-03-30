@@ -1,6 +1,7 @@
 package com.mygdx.magegame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -18,12 +19,18 @@ public class GameScreen implements Screen {
 
     Array<GameObject> objects; // Все объекты с текстурами
     Array<TextObject> text_objects; // Все текстовые объекты
-    TextObject debug_tool;
-    TextObject debug_tool2;
     TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
     boolean was_tile_set = true; // Был ли уставновлен тайл
     // По умолчанию установлен в true, чтобы первый клик не спавнил тайл
+
+    // debug-штуки:
+    TextObject debug_tool;
+    TextObject debug_tool2;
+
+    // Тайл, который будет устанавливаться
+    GameObject place_tile;
+    int id_of_place_tile = 0; // Айди данного тайла
 
     OrthographicCamera camera;
 
@@ -54,6 +61,10 @@ public class GameScreen implements Screen {
         debug_tool = new TextObject(0,0,"Text 1");
         debug_tool2 = new TextObject(0,10,"Text 2");
         text_objects.add(debug_tool, debug_tool2);
+
+        place_tile = new GameObject(tileSet, id_of_place_tile, -window_w/2, window_h/2-tileSet.size);
+        objects.add(place_tile);
+        text_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set"));
     }
 
     @Override
@@ -122,12 +133,13 @@ public class GameScreen implements Screen {
 
                 // TODO: Нужно разобраться, как правильно интерпретировать координаты
                 GameObject new_go = new GameObject(tileSet,
-                        0,
+                        id_of_place_tile,
                         //(int) touchPos.x - tileSet.size / 2 - window_w / 2,
                         actual_x,
                         //window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2
                         actual_y);
 
+                // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые
                 objects.add(new_go);
 
                 debug_tool.set_text(String.format("Coord after unproject (%d, %d)", (int) touchPos.x, (int) touchPos.y));
@@ -136,6 +148,24 @@ public class GameScreen implements Screen {
         }
         else {
             was_tile_set = false;
+        }
+
+        // Обработка нажатий на клавиатуру
+        if (Gdx.input.isKeyPressed(Input.Keys.NUM_0)){
+            place_tile.set_id(0);
+            id_of_place_tile = 0;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
+            place_tile.set_id(1);
+            id_of_place_tile = 1;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.NUM_2)){
+            place_tile.set_id(2);
+            id_of_place_tile = 2;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.NUM_3)){
+            place_tile.set_id(3);
+            id_of_place_tile = 3;
         }
     }
 
