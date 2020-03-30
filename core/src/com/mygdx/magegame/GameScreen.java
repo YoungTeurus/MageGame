@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -20,6 +22,9 @@ public class GameScreen implements Screen {
     TextObject debug_tool2;
     TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
+    boolean was_tile_set = true; // Был ли уставновлен тайл
+    // По умолчанию установлен в true, чтобы первый клик не спавнил тайл
+
     OrthographicCamera camera;
 
     public GameScreen(final MageGame game){
@@ -32,7 +37,7 @@ public class GameScreen implements Screen {
 
         // Создание камеры
         camera = new OrthographicCamera();
-        camera.setToOrtho(false,window_w, window_h);
+        camera.setToOrtho(true,window_w, window_h);
 
         // Тестовое создание объектов
         Vector3 spawn_place = new Vector3();
@@ -76,30 +81,61 @@ public class GameScreen implements Screen {
                     current_text_object.screen_x,
                     current_text_object.screen_y);
         }
+
+        // Отрисовка сетки:
+        Pixmap pixmap = new Pixmap( window_w, window_h, Pixmap.Format.RGBA8888 ); // Штука для хранения пикселей
+        pixmap.setColor( 0.8f, 0.8f, 0.8f, 0.75f );
+
+        // Горизонтальные линии
+        for(int y=0; y<= window_h; y+=tileSet.size){
+            pixmap.drawLine(0,y,window_w, y);
+        }
+        // Вертикальные линии
+        for(int x=0;x<=window_w; x+=tileSet.size){
+            pixmap.drawLine(x,0,x,window_h);
+        }
+        // TODO: двигать сетку относительно положения камеры
+        Texture pixmaptex = new Texture( pixmap ); // Перевод в текстуру
+        pixmap.dispose();
+        game.batch.draw(pixmaptex,0 - (float)window_w/2,-window_h + (float)window_h/2); // Отрисовка сетки
+
         game.batch.end();
 
 
         // Обработка нажатий на окно
         if (Gdx.input.isTouched()) { // Реагирует на нажатия мыши и пальца
-            // Создание нового объекта в месте нажатия
+            if (!was_tile_set) {
+                // Создание нового объекта в месте нажатия
 
-            // Получение места нажатия
-            Vector3 touchPos = new Vector3();
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+                // Получение места нажатия
+                Vector3 touchPos = new Vector3();
+                touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 
-            debug_tool2.set_text(String.format("Coord before unproject (%d, %d)", (int)touchPos.x, (int)touchPos.y));
+                debug_tool2.set_text(String.format("Coord before unproject (%d, %d)", (int) touchPos.x, (int) touchPos.y));
 
-            camera.unproject(touchPos);
+                // camera.unproject(touchPos);
 
-            // Собственно создание объекта
-            // TODO: Нужно разобраться, как правильно интерпретировать координаты
-            GameObject new_go = new GameObject(tileSet,
-                    0,
-                    (int)touchPos.x - tileSet.size/2 - window_w/2,
-                    (int)touchPos.y- tileSet.size/2 - window_h/2);
-            objects.add(new_go);
+                // Собственно создание объекта
+                // TODO: Пофиксить баг с неправильным размещением тайлов
+                int actual_x = ((int) touchPos.x - tileSet.size / 2 - window_w / 2)/tileSet.size * tileSet.size - tileSet.size/2;
+                int actual_y = (window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2)/tileSet.size * tileSet.size - tileSet.size/2;
 
-            debug_tool.set_text(String.format("Coord after unproject (%d, %d)", (int)touchPos.x, (int)touchPos.y));
+                // TODO: Нужно разобраться, как правильно интерпретировать координаты
+                GameObject new_go = new GameObject(tileSet,
+                        0,
+                        //(int) touchPos.x - tileSet.size / 2 - window_w / 2,
+                        actual_x,
+                        //window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2
+                        actual_y);
+
+                objects.add(new_go);
+
+                debug_tool.set_text(String.format("Coord after unproject (%d, %d)", (int) touchPos.x, (int) touchPos.y));
+                was_tile_set = true;
+            }
+        }
+        else {
+            was_tile_set = false;
         }
     }
 
