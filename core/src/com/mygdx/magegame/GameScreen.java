@@ -18,7 +18,9 @@ public class GameScreen implements Screen {
     final MageGame game; // Сама игра(?) - взято из туториала
 
     Array<GameObject> objects; // Все объекты с текстурами
+    Array<GameObject> non_movable_objects; // Сюда должны помещаться все объекты, которые не должны двигаться вместе с камерой
     Array<TextObject> text_objects; // Все текстовые объекты
+    Array<TextObject> non_movable_text_objects; // Все независящие от камеры объекты
     TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
     boolean was_tile_set = true; // Был ли уставновлен тайл
@@ -41,7 +43,9 @@ public class GameScreen implements Screen {
 
         // Создание объектов полей
         objects = new Array<>();
+        non_movable_objects = new Array<>();
         text_objects = new Array<>();
+        non_movable_text_objects = new Array<>();
         tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
 
         // Создание камеры
@@ -62,11 +66,11 @@ public class GameScreen implements Screen {
         // Тестовое создание текста:
         debug_tool = new TextObject(0,0,"Text 1");
         debug_tool2 = new TextObject(0,10,"Text 2");
-        text_objects.add(debug_tool, debug_tool2);
+        non_movable_text_objects.add(debug_tool, debug_tool2);
 
         place_tile = new GameObject(tileSet, id_of_place_tile, -window_w/2, window_h/2-tileSet.size);
-        objects.add(place_tile);
-        text_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set"));
+        non_movable_objects.add(place_tile);
+        non_movable_text_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set"));
     }
 
     @Override
@@ -85,14 +89,26 @@ public class GameScreen implements Screen {
         // Отрисовка всех спрайтов должна происходить вот здесь
         game.batch.begin();
         for (GameObject current_object : objects) {
-            current_object.object_sprite.draw(game.batch);
             // TODO: Нужно как-то двигать все тексутурки относительно камеры
-            // Каким-то образом нужно получать смещение камеры и относительно этого отрисовывать всё в мире (понять,
-            // как видоизменить функцию выше).
-            // ИЛИ можно обойтись без камеры, но тогда при нажатии клавиши движения координаты будут меняться у ВСЕХ
-            // объектов в мире, что есть огромный ГЕМОРОЙ, ибо пока что это не предусмотрено.
+            game.batch.draw(current_object.object_texture_region,
+                    current_object.world_x + camera.position.x,
+                    current_object.world_y + camera.position.y);
+            // current_object.object_sprite.draw(game.batch);
+        }
+        for (GameObject current_object : non_movable_objects) {
+            // Отрисовка всех объектов, чьё положение не должно зависеть от камеры
+            game.batch.draw(current_object.object_texture_region,
+                    current_object.world_x,
+                    current_object.world_y);
+            // current_object.object_sprite.draw(game.batch);
         }
         for (TextObject current_text_object: text_objects){
+            game.font.draw(game.batch,
+                    current_text_object.text,
+                    current_text_object.screen_x + camera.position.x,
+                    current_text_object.screen_y + camera.position.y);
+        }
+        for (TextObject current_text_object: non_movable_text_objects){
             game.font.draw(game.batch,
                     current_text_object.text,
                     current_text_object.screen_x,
@@ -127,7 +143,9 @@ public class GameScreen implements Screen {
             Texture pixmaptex = new Texture(pixmap); // Перевод в текстуру
             pixmap.dispose();
             //game.batch.draw(pixmaptex, 0 - (float) window_w / 2, -window_h + (float) window_h / 2); // Отрисовка сетки
-            game.batch.draw(pixmaptex,(float)-window_w/2,(float)-window_h/2);
+            game.batch.draw(pixmaptex,
+                    (float)-window_w/2 + camera.position.x,
+                    (float)-window_h/2 + camera.position.y);
         }
         game.batch.end();
 
@@ -143,20 +161,19 @@ public class GameScreen implements Screen {
 
                 // Координаты нажатия в мире
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
-                        (int)touchPos.x - tileSet.size / 2 - window_w / 2,
-                        window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2)
+                        (int)touchPos.x,
+                        window_h - (int) touchPos.y)
                 );
 
-                // camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
+                camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 // Собственно создание объекта
                 // TODO: Пофиксить баг с неправильным размещением тайлов
-                int actual_x = ((int) touchPos.x - window_w / 2)/tileSet.size * tileSet.size;
-                int actual_y = (window_h - (int) touchPos.y - window_h / 2)/tileSet.size * tileSet.size;
+                int actual_x = ((int) touchPos.x);
+                int actual_y = (window_h - (int) touchPos.y);
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("Placed coords: (%d, %d)", ((int) touchPos.x - window_w / 2)/tileSet.size,
-                        (window_h - (int) touchPos.y - window_h / 2)/tileSet.size));
+                debug_tool.set_text(String.format("Placed coords: (%d, %d)",actual_x,actual_y));
 
                 // TODO: Нужно разобраться, как правильно интерпретировать координаты
                 GameObject new_go = new GameObject(tileSet,
@@ -175,6 +192,8 @@ public class GameScreen implements Screen {
                 // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
                 // точно (что, в общем-то, пока что соблюдается).
                 objects.add(new_go);
+
+                Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
 
                 was_tile_set = true;
             }
@@ -202,6 +221,19 @@ public class GameScreen implements Screen {
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
             need_to_draw_grid = !need_to_draw_grid;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+            camera.translate(-3, 0 ,0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+            camera.translate(3, 0 ,0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)){
+            camera.translate(0, 3 ,0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
+            camera.translate(0, -3 ,0);
         }
     }
 

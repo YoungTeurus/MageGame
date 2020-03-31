@@ -1,9 +1,11 @@
 package com.mygdx.magegame;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class GameObject {
-    Sprite object_sprite; // Спрайт объекта
+    //Sprite object_sprite; // Спрайт объекта
+    TextureRegion object_texture_region;
 
     int world_x;
     int world_y;
@@ -30,7 +32,7 @@ public class GameObject {
     public void set_coords(int x, int y){
         world_x = x;
         world_y = y;
-        object_sprite.setPosition(world_x, world_y);
+        //object_sprite.setPosition(world_x, world_y);
     }
 
     public void set_id(int new_id){
@@ -44,7 +46,9 @@ public class GameObject {
         int srcX = id%16 * parent_tileSet.size;
         int srcY = id/16 * parent_tileSet.size;
 
-        object_sprite = new Sprite(parent_tileSet.texture, srcX, srcY, parent_tileSet.size, parent_tileSet.size);
-        object_sprite.setPosition(world_x, world_y);
+        //object_sprite = new Sprite(parent_tileSet.texture, srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+        //object_sprite.setPosition(world_x, world_y);
+
+        object_texture_region = new TextureRegion(parent_tileSet.texture,srcX, srcY, parent_tileSet.size, parent_tileSet.size);
     }
 }
