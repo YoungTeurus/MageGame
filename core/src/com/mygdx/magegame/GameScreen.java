@@ -87,6 +87,10 @@ public class GameScreen implements Screen {
         for (GameObject current_object : objects) {
             current_object.object_sprite.draw(game.batch);
             // TODO: Нужно как-то двигать все тексутурки относительно камеры
+            // Каким-то образом нужно получать смещение камеры и относительно этого отрисовывать всё в мире (понять,
+            // как видоизменить функцию выше).
+            // ИЛИ можно обойтись без камеры, но тогда при нажатии клавиши движения координаты будут меняться у ВСЕХ
+            // объектов в мире, что есть огромный ГЕМОРОЙ, ибо пока что это не предусмотрено.
         }
         for (TextObject current_text_object: text_objects){
             game.font.draw(game.batch,
@@ -117,7 +121,7 @@ public class GameScreen implements Screen {
 
 
         // Обработка нажатий на окно
-        if (Gdx.input.isTouched()) { // Реагирует на нажатия мыши и пальца
+        if (Gdx.input.isTouched() && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) { // Реагирует на нажатия ЛКМ
             if (!was_tile_set) {
                 // Создание нового объекта в месте нажатия
 
@@ -125,14 +129,21 @@ public class GameScreen implements Screen {
                 Vector3 touchPos = new Vector3();
                 touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 
-                debug_tool2.set_text(String.format("Coord before unproject (%d, %d)", (int) touchPos.x, (int) touchPos.y));
+                // Координаты нажатия в мире
+                debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
+                        (int)touchPos.x - tileSet.size / 2 - window_w / 2,
+                        window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2)
+                );
 
-                // camera.unproject(touchPos);
+                // camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 // Собственно создание объекта
                 // TODO: Пофиксить баг с неправильным размещением тайлов
                 int actual_x = ((int) touchPos.x - tileSet.size / 2 - window_w / 2)/tileSet.size * tileSet.size - tileSet.size/2;
                 int actual_y = (window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2)/tileSet.size * tileSet.size - tileSet.size/2;
+
+                // Координаты добавляемого объекта
+                debug_tool.set_text(String.format("Placed coords: (%d, %d)", actual_x, actual_y));
 
                 // TODO: Нужно разобраться, как правильно интерпретировать координаты
                 GameObject new_go = new GameObject(tileSet,
@@ -142,10 +153,16 @@ public class GameScreen implements Screen {
                         //window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2
                         actual_y);
 
-                // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые
+                // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
+                // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
+                // поверх других, например, колонны. Но так как мир у нас с "глубиной", есть смысл выносить их на отдельный уровень.
+                // Так что да: действительно нужно ЗАМЕЩАТЬ тайлы.
+                //
+                // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
+                // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
+                // точно (что, в общем-то, пока что соблюдается).
                 objects.add(new_go);
 
-                debug_tool.set_text(String.format("Coord after unproject (%d, %d)", (int) touchPos.x, (int) touchPos.y));
                 was_tile_set = true;
             }
         }
