@@ -49,15 +49,15 @@ public class GameScreen implements Screen {
         camera.setToOrtho(true,window_w, window_h);
 
         // Тестовое создание объектов
-        Vector3 spawn_place = new Vector3();
-        for(int i = 0; i< 10; i++){
-            for (int j=0;j<10;j++){
-                spawn_place.set((i*32) - (float)window_w/2, (j*32) - (float)window_h/2, 0);
-                //camera.unproject(spawn_place);
-                GameObject go = new GameObject(tileSet, 0, (int)spawn_place.x, (int)spawn_place.y);
-                objects.add(go);
-            }
-        }
+        // Vector3 spawn_place = new Vector3();
+        // for(int i = 0; i< 10; i++){
+        //     for (int j=0;j<10;j++){
+        //         spawn_place.set((i*32) - (float)window_w/2, (j*32) - (float)window_h/2, 0);
+        //         //camera.unproject(spawn_place);
+        //         GameObject go = new GameObject(tileSet, 0, (int)spawn_place.x, (int)spawn_place.y);
+        //         objects.add(go);
+        //     }
+        // }
 
         // Тестовое создание текста:
         debug_tool = new TextObject(0,0,"Text 1");
@@ -106,16 +106,28 @@ public class GameScreen implements Screen {
 
             // Горизонтальные линии
             for (int y = 0; y <= window_h; y += tileSet.size) {
+                if (y >= window_h/2){
+                    // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+                    pixmap.setColor(1.0f,0.2f,0.2f, 0.9f);
+                }
                 pixmap.drawLine(0, y, window_w, y);
             }
+            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
             // Вертикальные линии
             for (int x = 0; x <= window_w; x += tileSet.size) {
+                if (x >= window_w/2){
+                    // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+                    pixmap.setColor(1.0f,0.2f,0.2f, 0.9f);
+                }
                 pixmap.drawLine(x, 0, x, window_h);
             }
+            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
+            pixmap.drawLine(-window_w,-window_h,window_w,window_h); // Диагональная линия
             // TODO: двигать сетку относительно положения камеры
             Texture pixmaptex = new Texture(pixmap); // Перевод в текстуру
             pixmap.dispose();
-            game.batch.draw(pixmaptex, 0 - (float) window_w / 2, -window_h + (float) window_h / 2); // Отрисовка сетки
+            //game.batch.draw(pixmaptex, 0 - (float) window_w / 2, -window_h + (float) window_h / 2); // Отрисовка сетки
+            game.batch.draw(pixmaptex,(float)-window_w/2,(float)-window_h/2);
         }
         game.batch.end();
 
@@ -139,11 +151,12 @@ public class GameScreen implements Screen {
 
                 // Собственно создание объекта
                 // TODO: Пофиксить баг с неправильным размещением тайлов
-                int actual_x = ((int) touchPos.x - tileSet.size / 2 - window_w / 2)/tileSet.size * tileSet.size - tileSet.size/2;
-                int actual_y = (window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2)/tileSet.size * tileSet.size - tileSet.size/2;
+                int actual_x = ((int) touchPos.x - window_w / 2)/tileSet.size * tileSet.size;
+                int actual_y = (window_h - (int) touchPos.y - window_h / 2)/tileSet.size * tileSet.size;
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("Placed coords: (%d, %d)", actual_x, actual_y));
+                debug_tool.set_text(String.format("Placed coords: (%d, %d)", ((int) touchPos.x - window_w / 2)/tileSet.size,
+                        (window_h - (int) touchPos.y - window_h / 2)/tileSet.size));
 
                 // TODO: Нужно разобраться, как правильно интерпретировать координаты
                 GameObject new_go = new GameObject(tileSet,
