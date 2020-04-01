@@ -2,17 +2,16 @@ package com.mygdx.magegame;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 
 public class GameObject implements GameObjectInterface {
     TextureRegion object_texture_region;
     boolean is_camera_oriented; // Должен ли объект отрисовываться с поправкой на камеру
 
-    int world_x;
-    int world_y;
     TileSet parent_tileSet;
+    Vector2 world_pos;
 
     int id;
 
@@ -27,15 +26,10 @@ public class GameObject implements GameObjectInterface {
         // ...
 
         parent_tileSet = tileSet;
-        world_x = x;
-        world_y = y;
+        world_pos = new Vector2();
+        set_pos(x, y);
         this.is_camera_oriented = is_camera_oriented;
         set_id(id);
-    }
-
-    public void set_coords(int x, int y){
-        world_x = x;
-        world_y = y;
     }
 
     public void set_id(int new_id){
@@ -56,13 +50,18 @@ public class GameObject implements GameObjectInterface {
     public void draw(SpriteBatch batch, BitmapFont font, OrthographicCamera camera) {
         if (is_camera_oriented){
             batch.draw(object_texture_region,
-                    world_x+camera.position.x,
-                    world_y+camera.position.y);
+                    world_pos.x+camera.position.x,
+                    world_pos.y+camera.position.y);
         }
         else {
             batch.draw(object_texture_region,
-                    world_x,
-                    world_y);
+                    world_pos.x,
+                    world_pos.y);
         }
+    }
+
+    @Override
+    public void set_pos(int x, int y){
+        world_pos.set(x, y);
     }
 }

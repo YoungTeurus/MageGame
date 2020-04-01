@@ -17,7 +17,8 @@ import static com.mygdx.magegame.Consts.window_w;
 public class GameScreen implements Screen {
     final MageGame game; // Сама игра(?) - взято из туториала
 
-    Array<GameObjectInterface> all_objects; // Все объекты
+    Array<GameObjectInterface> world_objects; // Все объекты мира
+    Array<GameObjectInterface> interface_objects; // Все объекты интерфейса
     //Array<GameObject> objects; // Все объекты с текстурами
     //Array<GameObject> non_movable_objects; // Сюда должны помещаться все объекты, которые не должны двигаться вместе с камерой
     //Array<TextObject> text_objects; // Все текстовые объекты
@@ -32,6 +33,8 @@ public class GameScreen implements Screen {
     // debug-штуки:
     TextObject debug_tool;
     TextObject debug_tool2;
+    TextObject debug_tool3;
+    Texture pixmaptex; // Текстура сетки для отрисовки
 
     // Тайл, который будет устанавливаться
     GameObject place_tile;
@@ -43,21 +46,25 @@ public class GameScreen implements Screen {
         this.game = game;
 
         // Создание объектов полей
-        all_objects = new Array<>();
+        world_objects = new Array<>();
+        interface_objects = new Array<>();
         tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
 
         // Создание камеры
         camera = new OrthographicCamera();
-        camera.setToOrtho(true,window_w, window_h);
+        camera.setToOrtho(true,0, 0);
 
-        // Тестовое создание текста:
+        // Отладчный текст или текст интерфейса:
         debug_tool = new TextObject(0,0,"Text 1",false);
         debug_tool2 = new TextObject(0,10,"Text 2", false);
-        all_objects.add(debug_tool, debug_tool2);
+        debug_tool3 = new TextObject(0, -10, "Text 3", false);
+        debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        interface_objects.add(debug_tool, debug_tool2, debug_tool3);
 
+        // Объект интерфейса
         place_tile = new GameObject(tileSet, id_of_place_tile, -window_w/2, window_h/2-tileSet.size, false);
-        all_objects.add(place_tile);
-        all_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set", false));
+        interface_objects.add(place_tile);
+        interface_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set", false));
     }
 
     @Override
@@ -75,7 +82,10 @@ public class GameScreen implements Screen {
 
         // Отрисовка всех спрайтов должна происходить вот здесь
         game.batch.begin();
-        for (GameObjectInterface current_object: all_objects){
+        for (GameObjectInterface current_object: world_objects){
+            current_object.draw(game.batch, game.font, camera);
+        }
+        for (GameObjectInterface current_object: interface_objects){
             current_object.draw(game.batch, game.font, camera);
         }
         //for (GameObject current_object : objects) {
@@ -106,32 +116,35 @@ public class GameScreen implements Screen {
 
         // Отрисовка сетки:
         if (need_to_draw_grid) {
-            Pixmap pixmap = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888); // Штука для хранения пикселей
-            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
+            if (pixmaptex == null) { // Если текстуры сетки ещё нет
+                Pixmap pixmap = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888); // Штука для хранения пикселей
+                pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
 
-            // Горизонтальные линии
-            for (int y = 0; y <= window_h; y += tileSet.size) {
-                if (y >= window_h/2){
-                    // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
-                    pixmap.setColor(1.0f,0.2f,0.2f, 0.9f);
+                // Горизонтальные линии
+                for (int y = 10; y >= -10; y--) {
+                    if (y <= 0) {
+                        // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+                        pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
+                    }
+                    pixmap.drawLine(0, window_h / 2 + y * tileSet.size, window_w, window_h / 2 + y * tileSet.size);
                 }
-                pixmap.drawLine(0, y, window_w, y);
-            }
-            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
-            // Вертикальные линии
-            for (int x = 0; x <= window_w; x += tileSet.size) {
-                if (x >= window_w/2){
-                    // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
-                    pixmap.setColor(1.0f,0.2f,0.2f, 0.9f);
+                pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
+                // Вертикальные линии
+                for (int x = -10; x <= 10; x++) {
+                    if (x >= 0) {
+                        // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+                        pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
+                    }
+                    pixmap.drawLine(window_w / 2 + x * tileSet.size, 0, window_w / 2 + x * tileSet.size, window_h);
                 }
-                pixmap.drawLine(x, 0, x, window_h);
+                pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
+                pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
+                pixmap.drawLine(0, window_h / 2, window_w, window_h / 2);
+                // TODO: двигать сетку относительно положения камеры
+                pixmaptex = new Texture(pixmap); // Перевод в текстуру
+                pixmap.dispose();
             }
-            pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
-            pixmap.drawLine(-window_w,-window_h,window_w,window_h); // Диагональная линия
-            // TODO: двигать сетку относительно положения камеры
-            Texture pixmaptex = new Texture(pixmap); // Перевод в текстуру
-            pixmap.dispose();
-            //game.batch.draw(pixmaptex, 0 - (float) window_w / 2, -window_h + (float) window_h / 2); // Отрисовка сетки
+            // Отрисовка сетки
             game.batch.draw(pixmaptex,
                     (float)-window_w/2 + camera.position.x,
                     (float)-window_h/2 + camera.position.y);
@@ -146,32 +159,53 @@ public class GameScreen implements Screen {
 
                 // Получение места нажатия
                 Vector3 touchPos = new Vector3();
-                touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+                touchPos.set(Gdx.input.getX(), window_h - Gdx.input.getY(), 0);
 
-                // Координаты нажатия в мире
+                // Координаты нажатия в окне
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
                         (int)touchPos.x,
-                        window_h - (int) touchPos.y)
+                        (int) touchPos.y)
                 );
 
-                camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
+                //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 // Собственно создание объекта
                 // TODO: Пофиксить баг с неправильным размещением тайлов
-                int actual_x = ((int) touchPos.x);
-                int actual_y = (window_h - (int) touchPos.y);
+                int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
+                int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
+
+                if (actual_x < 0){
+                    actual_x -= tileSet.size;
+                }
+                if (actual_y < 0){
+                    actual_y -= tileSet.size;
+                }
+
+                int grid_x = (actual_x/tileSet.size * tileSet.size );
+                int grid_y = (actual_y/tileSet.size * tileSet.size );
+
+                //if (actual_x >= 0){
+                //    grid_x += tileSet.size/2;
+                //}
+                //else {
+                //    grid_x -= tileSet.size/2;
+                //}
+                //if (actual_y >= 0){
+                //    grid_y += tileSet.size/2;
+                //}
+                //else {
+                //    grid_y -= tileSet.size/2;
+                //}
+
+                //if (actual_x > 0 && actual_y > 0){
+                //    grid_x += tileSet.size/2;
+                //    grid_y += tileSet.size/2;
+                //}
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("Placed coords: (%d, %d)",actual_x,actual_y));
+                debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
 
-                // TODO: Нужно разобраться, как правильно интерпретировать координаты
-                GameObject new_go = new GameObject(tileSet,
-                        id_of_place_tile,
-                        //(int) touchPos.x - tileSet.size / 2 - window_w / 2,
-                        actual_x,
-                        //window_h - (int) touchPos.y - tileSet.size / 2 - window_h / 2
-                        actual_y,
-                        true);
+                GameObject new_go = new GameObject(tileSet,id_of_place_tile,grid_x,grid_y,true);
 
                 // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
                 // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
@@ -181,9 +215,9 @@ public class GameScreen implements Screen {
                 // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
                 // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
                 // точно (что, в общем-то, пока что соблюдается).
-                all_objects.add(new_go);
+                world_objects.add(new_go);
 
-                Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
+                //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
 
                 was_tile_set = true;
             }
@@ -215,15 +249,19 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             camera.translate(-3, 0 ,0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             camera.translate(3, 0 ,0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)){
             camera.translate(0, 3 ,0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             camera.translate(0, -3 ,0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
     }
 
