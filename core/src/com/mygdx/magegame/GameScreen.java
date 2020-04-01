@@ -140,14 +140,16 @@ public class GameScreen implements Screen {
                 pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
                 pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
                 pixmap.drawLine(0, window_h / 2, window_w, window_h / 2);
-                // TODO: двигать сетку относительно положения камеры
                 pixmaptex = new Texture(pixmap); // Перевод в текстуру
                 pixmap.dispose();
             }
             // Отрисовка сетки
+            //game.batch.draw(pixmaptex,
+            //        (float)-window_w/2 + camera.position.x,
+            //        (float)-window_h/2 + camera.position.y);
             game.batch.draw(pixmaptex,
-                    (float)-window_w/2 + camera.position.x,
-                    (float)-window_h/2 + camera.position.y);
+                    (float)-window_w/2 + (camera.position.x%tileSet.size),
+                    (float)-window_h/2 + (camera.position.y%tileSet.size));
         }
         game.batch.end();
 
@@ -170,7 +172,6 @@ public class GameScreen implements Screen {
                 //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 // Собственно создание объекта
-                // TODO: Пофиксить баг с неправильным размещением тайлов
                 int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
                 int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
 
@@ -248,19 +249,19 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            camera.translate(-3, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             camera.translate(3, 0 ,0);
             debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+            camera.translate(-3, 0 ,0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-            camera.translate(0, 3 ,0);
+            camera.translate(0, -3 ,0);
             debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-            camera.translate(0, -3 ,0);
+            camera.translate(0, 3 ,0);
             debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         }
     }
