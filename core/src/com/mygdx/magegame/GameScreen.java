@@ -7,8 +7,20 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.mygdx.magegame.model.Player;
+
+import java.util.Random;
 
 import static com.mygdx.magegame.Consts.window_h;
 import static com.mygdx.magegame.Consts.window_w;
@@ -16,7 +28,7 @@ import static com.mygdx.magegame.Consts.window_w;
 
 public class GameScreen implements Screen {
     final MageGame game; // Сама игра(?) - взято из туториала
-
+    Player player;
     Array<GameObjectInterface> world_objects; // Все объекты мира
     Array<GameObjectInterface> interface_objects; // Все объекты интерфейса
     //Array<GameObject> objects; // Все объекты с текстурами
@@ -40,7 +52,15 @@ public class GameScreen implements Screen {
     GameObject place_tile;
     int id_of_place_tile = 0; // Айди данного тайла
 
-    OrthographicCamera camera;
+    //OrthographicCamera camera;
+
+    Stage stage;
+    Group topLevel;
+    Group mapLevel;
+    //тестовое
+    Texture texture;
+    TextureRegion[] regions;
+    Sprite[] sprites;
 
     public GameScreen(final MageGame game){
         this.game = game;
@@ -51,20 +71,56 @@ public class GameScreen implements Screen {
         tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
 
         // Создание камеры
-        camera = new OrthographicCamera();
-        camera.setToOrtho(true,0, 0);
+        //camera = new OrthographicCamera();
+        //camera.setToOrtho(true,0, 0);
+
 
         // Отладчный текст или текст интерфейса:
         debug_tool = new TextObject(0,0,"Text 1",false);
         debug_tool2 = new TextObject(0,10,"Text 2", false);
         debug_tool3 = new TextObject(0, -10, "Text 3", false);
-        debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        //debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
         interface_objects.add(debug_tool, debug_tool2, debug_tool3);
 
         // Объект интерфейса
         place_tile = new GameObject(tileSet, id_of_place_tile, -window_w/2, window_h/2-tileSet.size, false);
         interface_objects.add(place_tile);
         interface_objects.add(new TextObject(-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set", false));
+
+
+        // тестовое
+        stage = new Stage(new ScalingViewport(Scaling.fit, 24, 12));
+        topLevel = new Group();
+        mapLevel = new Group();
+
+        regions = new TextureRegion[8 * 8];
+        sprites = new Sprite[24 * 12];
+
+        texture = new Texture(Gdx.files.internal("spriteset_0.png"));
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                regions[x + y * 8] = new TextureRegion(texture, x * 32, y * 32, 32, 32);
+            }
+        }
+
+        Random rand = new Random();
+        for (int y = 0, i = 0; y < 12; y++) {
+            for (int x = 0; x < 24; x++) {
+                Image img = new Image(regions[rand.nextInt(8 * 8)]);
+                img.setBounds(x, y, 1, 1);
+                mapLevel.addActor(img);
+                sprites[i] = new Sprite(regions[rand.nextInt(8 * 8)]);
+                sprites[i].setPosition(x, y);
+                sprites[i].setSize(1, 1);
+                i++;
+            }
+        }
+
+        topLevel.addActor(mapLevel);
+
+        player = new Player(new Vector2(1,2));
+        topLevel.addActor(player);
+        stage.addActor(topLevel);
     }
 
     @Override
@@ -75,195 +131,209 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         // Зарисовка фона
-        Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.update(); // Обновление камеры
-
-        // Отрисовка всех спрайтов должна происходить вот здесь
-        game.batch.begin();
-        for (GameObjectInterface current_object: world_objects){
-            current_object.draw(game.batch, game.font, camera);
-        }
-        for (GameObjectInterface current_object: interface_objects){
-            current_object.draw(game.batch, game.font, camera);
-        }
-        //for (GameObject current_object : objects) {
-        //    game.batch.draw(current_object.object_texture_region,
-        //            current_object.world_x + camera.position.x,
-        //            current_object.world_y + camera.position.y);
-        //    // current_object.object_sprite.draw(game.batch);
+        // обновит каждого актера на время delta
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.getBatch().disableBlending();
+        //
+        Group root = stage.getRoot();
+        Array<Actor> actors = root.getChildren();
+        //for(int i = 0; i < actors.size; i++) {
+        //	actors.get(i).setRotation(actors.get(i).getRotation() + 45 * Gdx.graphics.getDeltaTime());
         //}
-        //for (GameObject current_object : non_movable_objects) {
-        //    // Отрисовка всех объектов, чьё положение не должно зависеть от камеры
-        //    game.batch.draw(current_object.object_texture_region,
-        //            current_object.world_x,
-        //            current_object.world_y);
-        //    // current_object.object_sprite.draw(game.batch);
+        // вызовет actor.draw каждому актеру
+        stage.draw();
+
+        //Gdx.gl.glClearColor(0.2f,0.2f,0.2f,1);
+        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//
+        //camera.update(); // Обновление камеры
+//
+        //// Отрисовка всех спрайтов должна происходить вот здесь
+        //game.batch.begin();
+        //for (GameObjectInterface current_object: world_objects){
+        //    current_object.draw(game.batch, game.font, camera);
         //}
-        //for (TextObject current_text_object: text_objects){
-        //    game.font.draw(game.batch,
-        //            current_text_object.text,
-        //            current_text_object.world_x + camera.position.x,
-        //            current_text_object.world_y + camera.position.y);
+        //for (GameObjectInterface current_object: interface_objects){
+        //    current_object.draw(game.batch, game.font, camera);
         //}
-        //for (TextObject current_text_object: non_movable_text_objects){
-        //    game.font.draw(game.batch,
-        //            current_text_object.text,
-        //            current_text_object.world_x,
-        //            current_text_object.world_y);
+        ////for (GameObject current_object : objects) {
+        ////    game.batch.draw(current_object.object_texture_region,
+        ////            current_object.world_x + camera.position.x,
+        ////            current_object.world_y + camera.position.y);
+        ////    // current_object.object_sprite.draw(game.batch);
+        ////}
+        ////for (GameObject current_object : non_movable_objects) {
+        ////    // Отрисовка всех объектов, чьё положение не должно зависеть от камеры
+        ////    game.batch.draw(current_object.object_texture_region,
+        ////            current_object.world_x,
+        ////            current_object.world_y);
+        ////    // current_object.object_sprite.draw(game.batch);
+        ////}
+        ////for (TextObject current_text_object: text_objects){
+        ////    game.font.draw(game.batch,
+        ////            current_text_object.text,
+        ////            current_text_object.world_x + camera.position.x,
+        ////            current_text_object.world_y + camera.position.y);
+        ////}
+        ////for (TextObject current_text_object: non_movable_text_objects){
+        ////    game.font.draw(game.batch,
+        ////            current_text_object.text,
+        ////            current_text_object.world_x,
+        ////            current_text_object.world_y);
+        ////}
+//
+        //// Отрисовка сетки:
+        //if (need_to_draw_grid) {
+        //    if (pixmaptex == null) { // Если текстуры сетки ещё нет
+        //        Pixmap pixmap = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888); // Штука для хранения пикселей
+        //        pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
+//
+        //        // Горизонтальные линии
+        //        for (int y = 10; y >= -10; y--) {
+        //            if (y <= 0) {
+        //                // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+        //                pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
+        //            }
+        //            pixmap.drawLine(0, window_h / 2 + y * tileSet.size, window_w, window_h / 2 + y * tileSet.size);
+        //        }
+        //        pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
+        //        // Вертикальные линии
+        //        for (int x = -10; x <= 10; x++) {
+        //            if (x >= 0) {
+        //                // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
+        //                pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
+        //            }
+        //            pixmap.drawLine(window_w / 2 + x * tileSet.size, 0, window_w / 2 + x * tileSet.size, window_h);
+        //        }
+        //        pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
+        //        pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
+        //        pixmap.drawLine(0, window_h / 2, window_w, window_h / 2);
+        //        pixmaptex = new Texture(pixmap); // Перевод в текстуру
+        //        pixmap.dispose();
+        //    }
+        //    // Отрисовка сетки
+        //    //game.batch.draw(pixmaptex,
+        //    //        (float)-window_w/2 + camera.position.x,
+        //    //        (float)-window_h/2 + camera.position.y);
+        //    game.batch.draw(pixmaptex,
+        //            (float)-window_w/2 + (camera.position.x%tileSet.size),
+        //            (float)-window_h/2 + (camera.position.y%tileSet.size));
         //}
-
-        // Отрисовка сетки:
-        if (need_to_draw_grid) {
-            if (pixmaptex == null) { // Если текстуры сетки ещё нет
-                Pixmap pixmap = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888); // Штука для хранения пикселей
-                pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
-
-                // Горизонтальные линии
-                for (int y = 10; y >= -10; y--) {
-                    if (y <= 0) {
-                        // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
-                        pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
-                    }
-                    pixmap.drawLine(0, window_h / 2 + y * tileSet.size, window_w, window_h / 2 + y * tileSet.size);
-                }
-                pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
-                // Вертикальные линии
-                for (int x = -10; x <= 10; x++) {
-                    if (x >= 0) {
-                        // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
-                        pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
-                    }
-                    pixmap.drawLine(window_w / 2 + x * tileSet.size, 0, window_w / 2 + x * tileSet.size, window_h);
-                }
-                pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
-                pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
-                pixmap.drawLine(0, window_h / 2, window_w, window_h / 2);
-                pixmaptex = new Texture(pixmap); // Перевод в текстуру
-                pixmap.dispose();
-            }
-            // Отрисовка сетки
-            //game.batch.draw(pixmaptex,
-            //        (float)-window_w/2 + camera.position.x,
-            //        (float)-window_h/2 + camera.position.y);
-            game.batch.draw(pixmaptex,
-                    (float)-window_w/2 + (camera.position.x%tileSet.size),
-                    (float)-window_h/2 + (camera.position.y%tileSet.size));
-        }
-        game.batch.end();
-
-
-        // Обработка нажатий на окно
-        if (Gdx.input.isTouched() && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) { // Реагирует на нажатия ЛКМ
-            if (!was_tile_set) {
-                // Создание нового объекта в месте нажатия
-
-                // Получение места нажатия
-                Vector3 touchPos = new Vector3();
-                touchPos.set(Gdx.input.getX(), window_h - Gdx.input.getY(), 0);
-
-                // Координаты нажатия в окне
-                debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
-                        (int)touchPos.x,
-                        (int) touchPos.y)
-                );
-
-                //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
-
-                // Собственно создание объекта
-                int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
-                int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
-
-                if (actual_x < 0){
-                    actual_x -= tileSet.size;
-                }
-                if (actual_y < 0){
-                    actual_y -= tileSet.size;
-                }
-
-                int grid_x = (actual_x/tileSet.size * tileSet.size );
-                int grid_y = (actual_y/tileSet.size * tileSet.size );
-
-                //if (actual_x >= 0){
-                //    grid_x += tileSet.size/2;
-                //}
-                //else {
-                //    grid_x -= tileSet.size/2;
-                //}
-                //if (actual_y >= 0){
-                //    grid_y += tileSet.size/2;
-                //}
-                //else {
-                //    grid_y -= tileSet.size/2;
-                //}
-
-                //if (actual_x > 0 && actual_y > 0){
-                //    grid_x += tileSet.size/2;
-                //    grid_y += tileSet.size/2;
-                //}
-
-                // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
-
-                GameObject new_go = new GameObject(tileSet,id_of_place_tile,grid_x,grid_y,true);
-
-                // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
-                // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
-                // поверх других, например, колонны. Но так как мир у нас с "глубиной", есть смысл выносить их на отдельный уровень.
-                // Так что да: действительно нужно ЗАМЕЩАТЬ тайлы.
-                //
-                // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
-                // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
-                // точно (что, в общем-то, пока что соблюдается).
-                world_objects.add(new_go);
-
-                //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
-
-                was_tile_set = true;
-            }
-        }
-        else {
-            was_tile_set = false;
-        }
-
-        // Обработка нажатий на клавиатуру
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
-            place_tile.set_id(0);
-            id_of_place_tile = 0;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
-            place_tile.set_id(1);
-            id_of_place_tile = 1;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
-            place_tile.set_id(2);
-            id_of_place_tile = 2;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
-            place_tile.set_id(3);
-            id_of_place_tile = 3;
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
-            need_to_draw_grid = !need_to_draw_grid;
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            camera.translate(3, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            camera.translate(-3, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-            camera.translate(0, -3 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-            camera.translate(0, 3 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
-        }
+        //game.batch.end();
+//
+//
+        //// Обработка нажатий на окно
+        //if (Gdx.input.isTouched() && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) { // Реагирует на нажатия ЛКМ
+        //    if (!was_tile_set) {
+        //        // Создание нового объекта в месте нажатия
+//
+        //        // Получение места нажатия
+        //        Vector3 touchPos = new Vector3();
+        //        touchPos.set(Gdx.input.getX(), window_h - Gdx.input.getY(), 0);
+//
+        //        // Координаты нажатия в окне
+        //        debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
+        //                (int)touchPos.x,
+        //                (int) touchPos.y)
+        //        );
+//
+        //        //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
+//
+        //        // Собственно создание объекта
+        //        int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
+        //        int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
+//
+        //        if (actual_x < 0){
+        //            actual_x -= tileSet.size;
+        //        }
+        //        if (actual_y < 0){
+        //            actual_y -= tileSet.size;
+        //        }
+//
+        //        int grid_x = (actual_x/tileSet.size * tileSet.size );
+        //        int grid_y = (actual_y/tileSet.size * tileSet.size );
+//
+        //        //if (actual_x >= 0){
+        //        //    grid_x += tileSet.size/2;
+        //        //}
+        //        //else {
+        //        //    grid_x -= tileSet.size/2;
+        //        //}
+        //        //if (actual_y >= 0){
+        //        //    grid_y += tileSet.size/2;
+        //        //}
+        //        //else {
+        //        //    grid_y -= tileSet.size/2;
+        //        //}
+//
+        //        //if (actual_x > 0 && actual_y > 0){
+        //        //    grid_x += tileSet.size/2;
+        //        //    grid_y += tileSet.size/2;
+        //        //}
+//
+        //        // Координаты добавляемого объекта
+        //        debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
+//
+        //        GameObject new_go = new GameObject(tileSet,id_of_place_tile,grid_x,grid_y,true);
+//
+        //        // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
+        //        // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
+        //        // поверх других, например, колонны. Но так как мир у нас с "глубиной", есть смысл выносить их на отдельный уровень.
+        //        // Так что да: действительно нужно ЗАМЕЩАТЬ тайлы.
+        //        //
+        //        // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
+        //        // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
+        //        // точно (что, в общем-то, пока что соблюдается).
+        //        world_objects.add(new_go);
+//
+        //        //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
+//
+        //        was_tile_set = true;
+        //    }
+        //}
+        //else {
+        //    was_tile_set = false;
+        //}
+//
+        //// Обработка нажатий на клавиатуру
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
+        //    place_tile.set_id(0);
+        //    id_of_place_tile = 0;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
+        //    place_tile.set_id(1);
+        //    id_of_place_tile = 1;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
+        //    place_tile.set_id(2);
+        //    id_of_place_tile = 2;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
+        //    place_tile.set_id(3);
+        //    id_of_place_tile = 3;
+        //}
+        //if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
+        //    need_to_draw_grid = !need_to_draw_grid;
+        //}
+//
+        //if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+        //    camera.translate(3, 0 ,0);
+        //    debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        //}
+        //if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+        //    camera.translate(-3, 0 ,0);
+        //    debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        //}
+        //if (Gdx.input.isKeyPressed(Input.Keys.UP)){
+        //    camera.translate(0, -3 ,0);
+        //    debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        //}
+        //if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
+        //    camera.translate(0, 3 ,0);
+        //    debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)camera.position.x, (int)camera.position.y));
+        //}
     }
 
     @Override
