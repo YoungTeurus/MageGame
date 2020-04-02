@@ -1,6 +1,7 @@
 package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -43,6 +44,8 @@ public class Player extends GameObject {
         set_pos(x, y);
         this.type = type;
         set_texture();
+        setBounds(position.x, position.y,
+                parent_tileSet.size, parent_tileSet.size);
         addListener(
                 new InputListener(){
                     public  boolean touchDown (InputEvent event, float x, float y, int pointer, int button){
@@ -64,9 +67,9 @@ public class Player extends GameObject {
         resetWay();
         if(y > getY())
             upPressed();
-        if(y <  getY())
+        if(y <  getPosition().y)
             downPressed();
-        if ( x< getX())
+        if ( x< getPosition().x)
             leftPressed();
         if (x> (getPosition().x +SIZE))
             rightPressed();
@@ -115,20 +118,25 @@ public class Player extends GameObject {
 
         object_texture_region = new TextureRegion(parent_tileSet.texture,
                 srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+        setBounds(position.x, position.y,
+                parent_tileSet.size, parent_tileSet.size);
     }
 
     @Override
-    protected void draw(SpriteBatch batch, float parentAlpha) {
-        if (is_camera_oriented){
-            batch.draw(object_texture_region,
-                    position.x + parent_world.getCamera().position.x,
-                    position.y + parent_world.getCamera().position.y);
-        }
-        else {
-            batch.draw(object_texture_region,
-                    position.x,
-                    position.y);
-        }
+    public void draw(Batch batch, float parentAlpha) {
+        batch.draw(object_texture_region, getX(),getY(),
+                getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+        //if (is_camera_oriented){
+        //    batch.draw(object_texture_region,
+        //            position.x + parent_world.getCamera().position.x,
+        //            position.y + parent_world.getCamera().position.y);
+        //}
+        //else {
+        //    batch.draw(object_texture_region,
+        //            position.x,
+        //            position.y);
+        //}
     }
 
     @Override

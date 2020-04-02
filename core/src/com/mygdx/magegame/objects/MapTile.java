@@ -1,5 +1,6 @@
 package com.mygdx.magegame.objects;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.mygdx.magegame.TileSet;
@@ -32,20 +33,25 @@ public class MapTile extends GameObject {
          int srcY = id/16 * parent_tileSet.size;
 
          object_texture_region = new TextureRegion(parent_tileSet.texture,srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+         setBounds(position.x, position.y,
+                 1, 1);
      }
 
     @Override
-    public void draw(SpriteBatch batch, float parentAlpha) {
-         if (is_camera_oriented){
-             batch.draw(object_texture_region,
-                     position.x + parent_world.getCamera().position.x,
-                     position.y + parent_world.getCamera().position.y);
-         }
-         else {
-             batch.draw(object_texture_region,
-                     position.x,
-                     position.y);
-         }
+    public void draw(Batch batch, float parentAlpha) {
+        batch.draw(object_texture_region, getX(),getY(),
+                getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+         //if (is_camera_oriented){
+         //    batch.draw(object_texture_region,
+         //            position.x + parent_world.getCamera().position.x,
+         //            position.y + parent_world.getCamera().position.y);
+         //}
+         //else {
+         //    batch.draw(object_texture_region,
+         //            position.x,
+         //            position.y);
+         //}
     }
 
     @Override

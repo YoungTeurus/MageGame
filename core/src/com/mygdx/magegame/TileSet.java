@@ -10,6 +10,7 @@ public class TileSet {
     public TileSet(FileHandle path_to_texture, int size){
         texture = new Texture(path_to_texture);
         this.size = size;
+
     }
 
 }

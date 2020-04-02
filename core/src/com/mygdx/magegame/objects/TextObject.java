@@ -1,5 +1,6 @@
 package com.mygdx.magegame.objects;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.magegame.model.World;
@@ -16,7 +17,8 @@ public class TextObject extends GameObject {
     }
 
     @Override
-    protected void draw(SpriteBatch batch, float parentAlpha) {
+    public void draw(Batch batch, float parentAlpha)
+    {
         if (is_camera_oriented){
             parent_world.font.draw(batch,
                     text,

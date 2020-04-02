@@ -1,4 +1,5 @@
 package com.mygdx.magegame.objects;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -16,7 +17,12 @@ public abstract class GameObject extends Actor {
         is_camera_oriented = true;
     }
 
-    protected abstract void draw(SpriteBatch batch, float parentAlpha); // Отрисовывает объект
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+    }
+
+
     abstract void act(); // Отвечает за изменение логики
     public void set_pos(int x, int y) {
         // Устанавилвает позицию вектора положения
