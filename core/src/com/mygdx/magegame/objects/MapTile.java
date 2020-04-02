@@ -53,9 +53,4 @@ public class MapTile extends GameObject {
          //            position.y);
          //}
     }
-
-    @Override
-    void act() {
-
-    }
 }

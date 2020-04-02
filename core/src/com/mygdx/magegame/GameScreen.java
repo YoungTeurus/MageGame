@@ -2,6 +2,7 @@ package com.mygdx.magegame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.loaders.AssetLoader;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,7 +31,7 @@ import static com.mygdx.magegame.Consts.window_h;
 import static com.mygdx.magegame.Consts.window_w;
 
 
-public class GameScreen implements Screen {
+public class GameScreen implements Screen, InputProcessor {
     final MageGame game; // Сама игра(?) - взято из туториала
     World world;
     TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
@@ -73,6 +74,7 @@ public class GameScreen implements Screen {
         mapLevel = new Group(); // Actor-ы мира идут сюда
 
         regions = new TextureRegion[8 * 8];
+        Gdx.input.setInputProcessor(world);
 
         int max_x = 4;
         int max_y = 4;
@@ -125,7 +127,8 @@ public class GameScreen implements Screen {
         //topLevel.addActor(new TextObject(world,-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set", false));
 
 
-        //topLevel.addActor(world.getPlayer());
+        topLevel.addActor(world.getPlayer());
+        world.setKeyboardFocus(world.getPlayer());
         world.addActor(topLevel);
     }
 
@@ -257,43 +260,22 @@ public class GameScreen implements Screen {
         else {
             was_tile_set = false;
         }
-//
-        //// Обработка нажатий на клавиатуру
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
-        //    place_tile.set_id(0);
-        //    id_of_place_tile = 0;
-        //}
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
-        //    place_tile.set_id(1);
-        //    id_of_place_tile = 1;
-        //}
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
-        //    place_tile.set_id(2);
-        //    id_of_place_tile = 2;
-        //}
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
-        //    place_tile.set_id(3);
-        //    id_of_place_tile = 3;
-        //}
-        //if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
-        //    need_to_draw_grid = !need_to_draw_grid;
-        //}
-//
+
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             world.getCamera().translate(-1, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
+            //debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             world.getCamera().translate(1, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
+            //debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)){
             world.getCamera().translate(0, 1 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
+            //debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             world.getCamera().translate(0, -1 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
+            //debug_tool3.set_text(String.format("Camera coords: (%d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.P)){
             world.getViewport().update(
@@ -341,6 +323,47 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        world.dispose();
+        Gdx.input.setInputProcessor(null);
+    }
 
+    @Override
+    public boolean keyDown(int keycode) {
+        return world.keyDown(keycode);
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return world.keyUp(keycode);
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return world.touchDown(screenX, screenY, pointer, button);
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return world.touchUp(screenX, screenY, pointer, button);
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 }

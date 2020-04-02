@@ -22,8 +22,6 @@ public abstract class GameObject extends Actor {
         super.draw(batch, parentAlpha);
     }
 
-
-    abstract void act(); // Отвечает за изменение логики
     public void set_pos(int x, int y) {
         // Устанавилвает позицию вектора положения
         position.set(x, y);

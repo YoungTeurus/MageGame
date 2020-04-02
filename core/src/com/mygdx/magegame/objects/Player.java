@@ -1,10 +1,13 @@
 package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -26,6 +29,13 @@ public class Player extends GameObject {
         LEFT, RIGHT, UP, DOWN
     }
     static Map<Keys, Boolean> direction = new HashMap<Keys, Boolean>();
+    static void initDirection(){
+        direction.put(Keys.LEFT, false);
+        direction.put(Keys.RIGHT, false);
+        direction.put(Keys.UP, false);
+        direction.put(Keys.DOWN, false);
+    };
+
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
     public static final float SPEED = 2f;
     // размер конст
@@ -44,41 +54,62 @@ public class Player extends GameObject {
         set_pos(x, y);
         this.type = type;
         set_texture();
-        setBounds(position.x, position.y,
-                parent_tileSet.size, parent_tileSet.size);
+        setBounds(position.x, position.y, SIZE, SIZE);
         addListener(
                 new InputListener(){
-                    public  boolean touchDown (InputEvent event, float x, float y, int pointer, int button){
-                        ChangeNavigation(x, y);
+                    @Override
+                    public boolean keyDown(InputEvent event, int keycode) {
+                        handleInput(keycode);
                         processInput();
                         return true;
                     }
-
+                    @Override
+                    public boolean keyUp(InputEvent event, int keycode) {
+                        if ( keycode == Input.Keys.W )
+                            upReleased();
+                        if ( keycode == Input.Keys.S )
+                            downReleased();
+                        if ( keycode == Input.Keys.A )
+                            leftReleased();
+                        if ( keycode == Input.Keys.D )
+                            rightReleased();
+                        processInput();
+                        return true;
+                    }
+                    @Override
+                    public  boolean touchDown (InputEvent event, float x, float y, int pointer, int button){
+                        // клик на нашего игрока
+                        return true;
+                    }
+                    @Override
                     public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-	        	        /*ChangeNavigation(x, y);
-	    		        processInput();*/
+                        // если отжали кнопочку на нашем игроке никуда не идем
+	        	        resetWay();
                     }
                 }
         );
+        initDirection();
     }
 
-    public void ChangeNavigation(float x, float y){
-        //Log.e("Player ", "["+x+":"+y+"] --- ["+this.getX()+":"+this.getY()+"]");
-        resetWay();
-        if(y > getY())
+    private void handleInput(int keycode) {
+        if ( keycode == Input.Keys.W )
             upPressed();
-        if(y <  getPosition().y)
+        if ( keycode == Input.Keys.S )
             downPressed();
-        if ( x< getPosition().x)
+        if ( keycode == Input.Keys.A )
             leftPressed();
-        if (x> (getPosition().x +SIZE))
+        if ( keycode == Input.Keys.D )
             rightPressed();
-        processInput();
     }
 
-    public Vector2 getPosition() {
-        return position;
+    public void handleMouseInput(Vector2 mouseCoords){
+        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.sub(position).toString() + mouseCoords.angle());
+        velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
+        velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
+        Gdx.app.log("Velos", velocity.toString());
     }
+
+    public Vector2 getPosition() { return position; }
 
     public void resetWay(){
         rightReleased();
@@ -86,7 +117,7 @@ public class Player extends GameObject {
         downReleased();
         upReleased();
         getVelocity().x = 0;
-        getVelocity().y  = 0;
+        getVelocity().y = 0;
     }
 
     private void processInput() {
@@ -119,7 +150,7 @@ public class Player extends GameObject {
         object_texture_region = new TextureRegion(parent_tileSet.texture,
                 srcX, srcY, parent_tileSet.size, parent_tileSet.size);
         setBounds(position.x, position.y,
-                parent_tileSet.size, parent_tileSet.size);
+                2, 2);
     }
 
     @Override
@@ -127,22 +158,26 @@ public class Player extends GameObject {
         batch.draw(object_texture_region, getX(),getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
                 getScaleX(), getScaleY(), getRotation());
-        //if (is_camera_oriented){
-        //    batch.draw(object_texture_region,
-        //            position.x + parent_world.getCamera().position.x,
-        //            position.y + parent_world.getCamera().position.y);
-        //}
-        //else {
-        //    batch.draw(object_texture_region,
-        //            position.x,
-        //            position.y);
-        //}
+
     }
 
     @Override
-    void act() {
-
+    public void act(float delta) {
+        super.act(delta);
+        updatePosition(delta);
+        // Gdx.app.log("Player coord", position.toString() + velocity.toString());
     }
+
+    public Actor hit(float x, float y, boolean touchable) {
+        //Процедура проверки. Если точка в прямоугольнике актёра, возвращаем актёра.
+        return x > 0 && x < getWidth() && y> 0 && y < getHeight()? this:null;
+    }
+
+    private void updatePosition(float delta) {
+        this.position.add(velocity.x*delta, velocity.y*delta);
+        this.setPosition(position.x, position.y);
+    }
+
 
     public void leftPressed() {
         direction.get(direction.put(Keys.LEFT, true));
