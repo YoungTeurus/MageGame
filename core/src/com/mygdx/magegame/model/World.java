@@ -13,8 +13,10 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.legasy.GameObjectInterface;
 import com.mygdx.magegame.objects.GameObject;
+import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
 import com.mygdx.magegame.objects.TextObject;
 
@@ -22,6 +24,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.mygdx.magegame.Consts.window_h;
@@ -32,6 +35,8 @@ public class World extends Stage {
     public Player player;
     // массив объектов на карте
     public Array<GameObject> texts;
+
+    public TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
     // ширина и высота мира
     public int worldWidth;
@@ -45,7 +50,7 @@ public class World extends Stage {
 
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
-        //map = new GameObject[worldWidth][worldHeight];
+        tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
         font = new BitmapFont();
         texts = new Array<>();
         createWorld();
@@ -79,6 +84,7 @@ public class World extends Stage {
     public void dispose() {
         super.dispose();
         font.dispose();
+        tileSet.dispose();
     }
 
     public void save(String filename){
@@ -101,10 +107,41 @@ public class World extends Stage {
 
             int line = 0;
             Pattern pattern1 = Pattern.compile("\\w+\\{.+\\}"); // Поиск строк, подходящих для наших объектов
-            Pattern pattern2 = Pattern.compile("((\d+,\d+)([,][ ])?){3}"); // Поиск координат в каждой из строк
+            Pattern pattern2 = Pattern.compile("((\\d+,\\d+)([,][\\s])?){3}"); // Поиск координат в каждой из строк
+            Pattern pattern3 = Pattern.compile("\\d+,\\d+"); // Поиск одного float
+
+            float[] for_coords = new float[3];
 
             while (scan.hasNextLine()){
                 String cur_line = scan.nextLine();
+                Gdx.app.log("Load", "String" + line + " :" + cur_line);
+                Matcher matcher1 = pattern1.matcher(cur_line);
+                Matcher matcher2 = pattern2.matcher(cur_line);
+                Matcher matcher3 = pattern3.matcher(cur_line);
+                if (matcher1.find()){
+                    Gdx.app.log("Load", "String" + line + " : was found pattern 1");
+                    if (matcher2.find()){ // Находим координаты
+                        int start = matcher2.start();
+                        int end = matcher2.end();
+                        String coords = cur_line.substring(start, end);
+                        Gdx.app.log("Load", "String" + line + " : was found pattern 2 :" + coords);
+                        int i = 0;
+                        while (matcher3.find()){
+                            int startf = matcher3.start();
+                            int endf = matcher3.end();
+                            String stringf = cur_line.substring(startf, endf).replace(",",".");
+                            float fl = Float.parseFloat(stringf);
+                            Gdx.app.log("Load", "String" + line + " : was found pattern 3 :" + fl);
+                            for_coords[i] = fl;
+                            i++;
+                        }
+
+                        MapTile new_object = new MapTile(tileSet,this,0,(int)for_coords[0],(int)for_coords[1],true);
+                        add_object(new_object);
+                    }
+
+                }
+                line++;
             }
         } catch (IOException e){
             e.printStackTrace();

@@ -33,7 +33,6 @@ import static com.mygdx.magegame.Consts.window_w;
 public class GameScreen implements Screen {
     final MageGame game; // Сама игра(?) - взято из туториала
     World world;
-    TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
     boolean was_tile_set = true; // Был ли уставновлен тайл
     // По умолчанию установлен в true, чтобы первый клик не спавнил тайл
@@ -63,7 +62,7 @@ public class GameScreen implements Screen {
 
         // Создание объектов полей
         world = new World(50,20);
-        tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
+
 
         // Создание камеры
         //camera = new OrthographicCamera();
@@ -80,11 +79,11 @@ public class GameScreen implements Screen {
         // texture = new Texture();
         for (int y = 0; y < max_y; y++) {
             for (int x = 0; x < max_x; x++) {
-                regions[x + y * max_x] = new TextureRegion(tileSet.texture,
-                        x * tileSet.size,
-                        y * tileSet.size,
-                        tileSet.size,
-                        tileSet.size);
+                regions[x + y * max_x] = new TextureRegion(world.tileSet.texture,
+                        x * world.tileSet.size,
+                        y * world.tileSet.size,
+                        world.tileSet.size,
+                        world.tileSet.size);
             }
         }
 
@@ -174,7 +173,7 @@ public class GameScreen implements Screen {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(0, window_h / 2 + y * tileSet.size, window_w, window_h / 2 + y * tileSet.size);
+                    pixmap.drawLine(0, window_h / 2 + y * world.tileSet.size, window_w, window_h / 2 + y * world.tileSet.size);
                 }
                 pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
                 // Вертикальные линии
@@ -183,7 +182,7 @@ public class GameScreen implements Screen {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(window_w / 2 + x * tileSet.size, 0, window_w / 2 + x * tileSet.size, window_h);
+                    pixmap.drawLine(window_w / 2 + x * world.tileSet.size, 0, window_w / 2 + x * world.tileSet.size, window_h);
                 }
                 pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
                 pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
@@ -196,8 +195,8 @@ public class GameScreen implements Screen {
             //        (float)-window_w/2 + camera.position.x,
             //        (float)-window_h/2 + camera.position.y);
             game.batch.draw(pixmaptex,
-                    (world.getCamera().position.x%tileSet.size),
-                    (world.getCamera().position.y%tileSet.size));
+                    (world.getCamera().position.x%world.tileSet.size),
+                    (world.getCamera().position.y%world.tileSet.size));
         }
         game.batch.end();
 //
@@ -231,7 +230,7 @@ public class GameScreen implements Screen {
                 // Координаты добавляемого объекта
                 debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
 
-                MapTile new_go = new MapTile(tileSet,world,id_of_place_tile,actual_x, actual_y, true);
+                MapTile new_go = new MapTile(world.tileSet,world,id_of_place_tile,actual_x, actual_y, true);
 
                 // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
                 // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
@@ -345,6 +344,5 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         world.dispose();
-        tileSet.dispose();
     }
 }
