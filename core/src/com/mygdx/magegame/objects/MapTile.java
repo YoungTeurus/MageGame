@@ -8,14 +8,14 @@ import com.mygdx.magegame.model.World;
 
 public class MapTile extends GameObject {
     TextureRegion object_texture_region;
-    TileSet parent_tileSet;
     int id;
+    int tileset_id;
 
-    public MapTile(TileSet tileSet, World world, int id, int x, int y, boolean is_camera_oriented){
+    public MapTile(World world,int tileset_id, int id, int x, int y, boolean is_camera_oriented){
         // Создаёт квадратный объект из текстуры с размером стороны - size.
         // Текстура выбирается по index-у
         super(world);
-        parent_tileSet = tileSet;
+        this.tileset_id = tileset_id;
         set_pos(x, y);
         this.is_camera_oriented = is_camera_oriented;
         set_texture(id);
@@ -29,10 +29,12 @@ public class MapTile extends GameObject {
          // ...
 
          id = new_id;
-         int srcX = id%16 * parent_tileSet.size;
-         int srcY = id/16 * parent_tileSet.size;
+         int srcX = id%16 * parent_world.tileSets[tileset_id].size;
+         int srcY = id/16 * parent_world.tileSets[tileset_id].size;
 
-         object_texture_region = new TextureRegion(parent_tileSet.texture,srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+         object_texture_region = new TextureRegion(parent_world.tileSets[tileset_id].texture,
+                 srcX, srcY,
+                 parent_world.tileSets[tileset_id].size, parent_world.tileSets[tileset_id].size);
          setBounds(position.x, position.y,
                  1, 1);
      }
@@ -56,7 +58,7 @@ public class MapTile extends GameObject {
 
     @Override
     public String toString() {
-        return String.format("MapTile{(%f, %f, %f), %d}",
-                position.x, position.y, position.z, id);
+        return String.format("MapTile{(%f, %f, %f), %d, %d}",
+                position.x, position.y, position.z, tileset_id, id);
     }
 }

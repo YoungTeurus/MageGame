@@ -4,28 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.loaders.AssetLoader;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.mygdx.magegame.model.World;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.TextObject;
-
-import java.util.Map;
-import java.util.Random;
 
 import static com.mygdx.magegame.Consts.window_h;
 import static com.mygdx.magegame.Consts.window_w;
@@ -69,25 +57,22 @@ public class GameScreen implements Screen, InputProcessor {
         //camera = new OrthographicCamera();
         //camera.setToOrtho(true,0, 0);
 
-        topLevel = new Group(); // Actor-ы интерфейса идут сюда
-        mapLevel = new Group(); // Actor-ы мира идут сюда
+        //topLevel = new Group(); // Actor-ы интерфейса идут сюда
+        //mapLevel = new Group(); // Actor-ы мира идут сюда
 
-        regions = new TextureRegion[8 * 8];
+        //regions = new TextureRegion[8 * 8];
         Gdx.input.setInputProcessor(world);
 
-        int max_x = 4;
-        int max_y = 4;
-
-        // texture = new Texture();
-        for (int y = 0; y < max_y; y++) {
-            for (int x = 0; x < max_x; x++) {
-                regions[x + y * max_x] = new TextureRegion(world.tileSet.texture,
-                        x * world.tileSet.size,
-                        y * world.tileSet.size,
-                        world.tileSet.size,
-                        world.tileSet.size);
-            }
-        }
+        //// texture = new Texture();
+        //for (int y = 0; y < max_y; y++) {
+        //    for (int x = 0; x < max_x; x++) {
+        //        regions[x + y * max_x] = new TextureRegion(world.tileSet.texture,
+        //                x * world.tileSet.size,
+        //                y * world.tileSet.size,
+        //                world.tileSet.size,
+        //                world.tileSet.size);
+        //    }
+        //}
 
         //Random rand = new Random();
         //for (int y = 0, i = 0; y < world.worldHeight; y++) {
@@ -126,9 +111,8 @@ public class GameScreen implements Screen, InputProcessor {
         //topLevel.addActor(new TextObject(world,-window_w/2 + tileSet.size, window_h/2 - tileSet.size/2, "<- This tile will be set", false));
 
 
-        topLevel.addActor(world.getPlayer());
         world.setKeyboardFocus(world.getPlayer());
-        world.addActor(topLevel);
+        world.addActor(world.getPlayer());
     }
 
     @Override
@@ -176,7 +160,8 @@ public class GameScreen implements Screen, InputProcessor {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(0, window_h / 2 + y * world.tileSet.size, window_w, window_h / 2 + y * world.tileSet.size);
+                    //TODO: Сделать размеры сетки НОРМАЛЬНЫМИ и правильными (вместо "32).
+                    pixmap.drawLine(0, window_h / 2 + y * 32, window_w, window_h / 2 + y * 32);
                 }
                 pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
                 // Вертикальные линии
@@ -185,7 +170,8 @@ public class GameScreen implements Screen, InputProcessor {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(window_w / 2 + x * world.tileSet.size, 0, window_w / 2 + x * world.tileSet.size, window_h);
+                    //TODO: Сделать размеры сетки НОРМАЛЬНЫМИ и правильными (вместо "32).
+                    pixmap.drawLine(window_w / 2 + x * 32, 0, window_w / 2 + x * 32, window_h);
                 }
                 pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
                 pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
@@ -194,12 +180,9 @@ public class GameScreen implements Screen, InputProcessor {
                 pixmap.dispose();
             }
             // Отрисовка сетки
-            //game.batch.draw(pixmaptex,
-            //        (float)-window_w/2 + camera.position.x,
-            //        (float)-window_h/2 + camera.position.y);
             game.batch.draw(pixmaptex,
-                    (world.getCamera().position.x%world.tileSet.size),
-                    (world.getCamera().position.y%world.tileSet.size));
+                    (world.getCamera().position.x%32),
+                    (world.getCamera().position.y%32));
         }
         game.batch.end();
 //
@@ -233,7 +216,7 @@ public class GameScreen implements Screen, InputProcessor {
                 // Координаты добавляемого объекта
                 debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
 
-                MapTile new_go = new MapTile(world.tileSet,world,id_of_place_tile,actual_x, actual_y, true);
+                MapTile new_go = new MapTile(world,0,id_of_place_tile,actual_x, actual_y, true);
 
                 // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
                 // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
@@ -256,6 +239,28 @@ public class GameScreen implements Screen, InputProcessor {
         else {
             was_tile_set = false;
         }
+//
+        // Обработка нажатий на клавиатуру
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
+        //    place_tile.set_texture(0);
+        //    id_of_place_tile = 0;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
+        //    place_tile.set_texture(1);
+        //    id_of_place_tile = 1;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
+        //    place_tile.set_texture(2);
+        //    id_of_place_tile = 2;
+        //}
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
+        //    place_tile.set_texture(3);
+        //    id_of_place_tile = 3;
+        //}
+        if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
+            need_to_draw_grid = !need_to_draw_grid;
+        }
+//
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             world.getCamera().translate(-1, 0 ,0);
