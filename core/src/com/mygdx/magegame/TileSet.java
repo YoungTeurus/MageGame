@@ -13,4 +13,7 @@ public class TileSet {
 
     }
 
+    public void dispose(){
+        texture.dispose();
+    }
 }

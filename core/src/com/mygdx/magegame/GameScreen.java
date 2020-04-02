@@ -101,9 +101,9 @@ public class GameScreen implements Screen {
         //img.setBounds(0,0,1,1);
         //mapLevel.addActor(img);
 
-        MapTile mt = new MapTile(tileSet, world, 0, 1,0,false);
+        //MapTile mt = new MapTile(tileSet, world, 0, 1,0,false);
 
-        topLevel.addActor(mt);
+        //topLevel.addActor(mt);
 
         // Отладчный текст или текст интерфейса:
         debug_tool = new TextObject(world,50,100,"Text 1",false);
@@ -156,12 +156,11 @@ public class GameScreen implements Screen {
         //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         //camera.update(); // Обновление камеры
-        game.batch.begin();
 
+        game.batch.begin();
         for (GameObject current_text: world.texts){
             current_text.draw(game.batch, 1);
         }
-
 
         // Отрисовка сетки:
         if (need_to_draw_grid) {
@@ -210,7 +209,7 @@ public class GameScreen implements Screen {
 
                 // Получение места нажатия
                 Vector3 touchPos = new Vector3();
-                touchPos.set(Gdx.input.getX(), window_h - Gdx.input.getY(), 0);
+                touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 
                 // Координаты нажатия в окне
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
@@ -218,26 +217,21 @@ public class GameScreen implements Screen {
                         (int) touchPos.y)
                 );
 
-                //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
+                world.getCamera().unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 //// Собственно создание объекта
-                //int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
-                //int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
-//
-                //if (actual_x < 0){
-                //    actual_x -= tileSet.size;
-                //}
-                //if (actual_y < 0){
-                //    actual_y -= tileSet.size;
-                //}
-//
+                int actual_x = (int) touchPos.x ;
+                int actual_y = (int) touchPos.y ;
+
+                // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
+
                 //int grid_x = (actual_x/tileSet.size * tileSet.size );
                 //int grid_y = (actual_y/tileSet.size * tileSet.size );
 
                 // Координаты добавляемого объекта
-                // debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
+                debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
 
-                //GameObject new_go = new GameObject(tileSet,id_of_place_tile,grid_x,grid_y,true);
+                MapTile new_go = new MapTile(tileSet,world,id_of_place_tile,actual_x, actual_y, true);
 
                 // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
                 // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
@@ -247,7 +241,10 @@ public class GameScreen implements Screen {
                 // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
                 // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
                 // точно (что, в общем-то, пока что соблюдается).
-                //world_objects.add(new_go);
+
+                world.add_object(new_go);
+
+                //world.add_object(new_go, actual_x, actual_y);
 
                 //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
 
@@ -315,6 +312,12 @@ public class GameScreen implements Screen {
                     world.getViewport().getScreenHeight())
             );
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
+            world.save("map.txt");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
+            world.load("map.txt");
+        }
     }
 
     @Override
@@ -341,6 +344,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        world.dispose();
+        tileSet.dispose();
     }
 }

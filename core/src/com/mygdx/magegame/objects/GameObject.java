@@ -2,18 +2,19 @@ package com.mygdx.magegame.objects;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.mygdx.magegame.model.World;
 import org.graalvm.compiler.word.Word;
 
 public abstract class GameObject extends Actor {
-    Vector2 position;
+    Vector3 position;
     boolean is_camera_oriented;
     World parent_world;
 
     GameObject(World world){
         parent_world = world;
-        position = new Vector2();
+        position = new Vector3();
         is_camera_oriented = true;
     }
 
@@ -22,10 +23,15 @@ public abstract class GameObject extends Actor {
         super.draw(batch, parentAlpha);
     }
 
-
-    abstract void act(); // Отвечает за изменение логики
     public void set_pos(int x, int y) {
         // Устанавилвает позицию вектора положения
-        position.set(x, y);
+        position.set(x, y, 0);
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format("GameObject{(%f, %f, %f)}",
+                position.x, position.y, position.z);
     }
 }

@@ -55,7 +55,8 @@ public class MapTile extends GameObject {
     }
 
     @Override
-    void act() {
-
+    public String toString() {
+        return String.format("MapTile{(%f, %f, %f), %d}",
+                position.x, position.y, position.z, id);
     }
 }
