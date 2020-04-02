@@ -102,14 +102,16 @@ public class Player extends GameObject {
             rightPressed();
     }
 
+    public Vector3 getPosition() {
+        return position;
+    }
+
     public void handleMouseInput(Vector2 mouseCoords){
         Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.sub(position).toString() + mouseCoords.angle());
         velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
         velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
         Gdx.app.log("Velos", velocity.toString());
     }
-
-    public Vector2 getPosition() { return position; }
 
     public void resetWay(){
         rightReleased();

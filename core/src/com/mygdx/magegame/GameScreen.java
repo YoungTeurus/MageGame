@@ -34,7 +34,6 @@ import static com.mygdx.magegame.Consts.window_w;
 public class GameScreen implements Screen, InputProcessor {
     final MageGame game; // Сама игра(?) - взято из туториала
     World world;
-    TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
 
     boolean was_tile_set = true; // Был ли уставновлен тайл
     // По умолчанию установлен в true, чтобы первый клик не спавнил тайл
@@ -64,7 +63,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         // Создание объектов полей
         world = new World(50,20);
-        tileSet = new TileSet(Gdx.files.internal("spriteset_0.png"), 32); // Загрузка тайлсета
+
 
         // Создание камеры
         //camera = new OrthographicCamera();
@@ -82,11 +81,11 @@ public class GameScreen implements Screen, InputProcessor {
         // texture = new Texture();
         for (int y = 0; y < max_y; y++) {
             for (int x = 0; x < max_x; x++) {
-                regions[x + y * max_x] = new TextureRegion(tileSet.texture,
-                        x * tileSet.size,
-                        y * tileSet.size,
-                        tileSet.size,
-                        tileSet.size);
+                regions[x + y * max_x] = new TextureRegion(world.tileSet.texture,
+                        x * world.tileSet.size,
+                        y * world.tileSet.size,
+                        world.tileSet.size,
+                        world.tileSet.size);
             }
         }
 
@@ -103,9 +102,9 @@ public class GameScreen implements Screen, InputProcessor {
         //img.setBounds(0,0,1,1);
         //mapLevel.addActor(img);
 
-        MapTile mt = new MapTile(tileSet, world, 0, 1,0,false);
+        //MapTile mt = new MapTile(tileSet, world, 0, 1,0,false);
 
-        topLevel.addActor(mt);
+        //topLevel.addActor(mt);
 
         // Отладчный текст или текст интерфейса:
         debug_tool = new TextObject(world,50,100,"Text 1",false);
@@ -159,12 +158,11 @@ public class GameScreen implements Screen, InputProcessor {
         //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         //camera.update(); // Обновление камеры
-        game.batch.begin();
 
+        game.batch.begin();
         for (GameObject current_text: world.texts){
             current_text.draw(game.batch, 1);
         }
-
 
         // Отрисовка сетки:
         if (need_to_draw_grid) {
@@ -178,7 +176,7 @@ public class GameScreen implements Screen, InputProcessor {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(0, window_h / 2 + y * tileSet.size, window_w, window_h / 2 + y * tileSet.size);
+                    pixmap.drawLine(0, window_h / 2 + y * world.tileSet.size, window_w, window_h / 2 + y * world.tileSet.size);
                 }
                 pixmap.setColor(0.8f, 0.8f, 0.8f, 0.75f);
                 // Вертикальные линии
@@ -187,7 +185,7 @@ public class GameScreen implements Screen, InputProcessor {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    pixmap.drawLine(window_w / 2 + x * tileSet.size, 0, window_w / 2 + x * tileSet.size, window_h);
+                    pixmap.drawLine(window_w / 2 + x * world.tileSet.size, 0, window_w / 2 + x * world.tileSet.size, window_h);
                 }
                 pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
                 pixmap.drawLine(window_w / 2, 0, window_w / 2, window_h);
@@ -200,8 +198,8 @@ public class GameScreen implements Screen, InputProcessor {
             //        (float)-window_w/2 + camera.position.x,
             //        (float)-window_h/2 + camera.position.y);
             game.batch.draw(pixmaptex,
-                    (world.getCamera().position.x%tileSet.size),
-                    (world.getCamera().position.y%tileSet.size));
+                    (world.getCamera().position.x%world.tileSet.size),
+                    (world.getCamera().position.y%world.tileSet.size));
         }
         game.batch.end();
 //
@@ -213,7 +211,7 @@ public class GameScreen implements Screen, InputProcessor {
 
                 // Получение места нажатия
                 Vector3 touchPos = new Vector3();
-                touchPos.set(Gdx.input.getX(), window_h - Gdx.input.getY(), 0);
+                touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 
                 // Координаты нажатия в окне
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d)",
@@ -221,26 +219,21 @@ public class GameScreen implements Screen, InputProcessor {
                         (int) touchPos.y)
                 );
 
-                //camera.unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
+                world.getCamera().unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 //// Собственно создание объекта
-                //int actual_x = (int) touchPos.x - (int)camera.position.x - window_w/2;
-                //int actual_y = (int) touchPos.y - (int)camera.position.y - window_h/2;
-//
-                //if (actual_x < 0){
-                //    actual_x -= tileSet.size;
-                //}
-                //if (actual_y < 0){
-                //    actual_y -= tileSet.size;
-                //}
-//
+                int actual_x = (int) touchPos.x ;
+                int actual_y = (int) touchPos.y ;
+
+                // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
+
                 //int grid_x = (actual_x/tileSet.size * tileSet.size );
                 //int grid_y = (actual_y/tileSet.size * tileSet.size );
 
                 // Координаты добавляемого объекта
-                // debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
+                debug_tool.set_text(String.format("World coords: (%d, %d)",actual_x,actual_y));
 
-                //GameObject new_go = new GameObject(tileSet,id_of_place_tile,grid_x,grid_y,true);
+                MapTile new_go = new MapTile(world.tileSet,world,id_of_place_tile,actual_x, actual_y, true);
 
                 // TODO: Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
                 // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
@@ -250,7 +243,10 @@ public class GameScreen implements Screen, InputProcessor {
                 // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
                 // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
                 // точно (что, в общем-то, пока что соблюдается).
-                //world_objects.add(new_go);
+
+                world.add_object(new_go);
+
+                //world.add_object(new_go, actual_x, actual_y);
 
                 //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
 
@@ -296,6 +292,12 @@ public class GameScreen implements Screen, InputProcessor {
                     world.getViewport().getScreenWidth(),
                     world.getViewport().getScreenHeight())
             );
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
+            world.save("map.txt");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
+            world.load("map.txt");
         }
     }
 
