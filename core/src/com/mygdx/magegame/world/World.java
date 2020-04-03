@@ -61,6 +61,7 @@ public class World extends Stage {
         font = new BitmapFont();
         texts = new Array<>();
         map = new TiledLayer();
+        addActor(map);
 
         createWorld();
     }
@@ -196,8 +197,16 @@ public class World extends Stage {
         try {
             FileWriter fw = new FileWriter(filename);
 
-            for (Actor cur_actor: getRoot().getChildren()){
-                fw.write(cur_actor.toString() + "\n");
+            //for (Actor cur_actor: getRoot().getChildren()){
+            //    fw.write(cur_actor.toString() + "\n");
+            //}
+
+            for(int current_level_num = map.bottom_level; current_level_num <= map.top_level; current_level_num++){
+                Group current_level = map.get_layer(current_level_num);
+                int size_of_current_level = current_level.getChildren().size;
+                for (Actor cur_actor: current_level.getChildren()){
+                    fw.write(cur_actor.toString() + "\n");
+                }
             }
             fw.close();
         } catch (IOException e) {
@@ -208,7 +217,7 @@ public class World extends Stage {
     public void load(String filename){
         // Загрузка мира из файла
         try{
-            getRoot().clear();
+            map.clear();
 
             FileReader fr = new FileReader(filename);
             Scanner scan = new Scanner(fr);

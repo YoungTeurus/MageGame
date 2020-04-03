@@ -7,8 +7,8 @@ import com.badlogic.gdx.utils.Array;
 public class TiledLayer extends Group {
 
     Array<Group> layers;
-    int top_level;
-    int bottom_level;
+    public int top_level;
+    public int bottom_level;
 
     public TiledLayer(){
         layers = new Array<>();
@@ -52,7 +52,14 @@ public class TiledLayer extends Group {
     public void draw(Batch batch, float parentAlpha) {
         //super.draw(batch, parentAlpha);
         for(int i = bottom_level; i <= top_level; i++){
-            layers.get(i).draw(batch, parentAlpha);
+            get_layer(i).draw(batch, parentAlpha);
+        }
+    }
+
+    @Override
+    public void clear(){
+        for(int i = bottom_level; i <= top_level; i++){
+            get_layer(i).clear();
         }
     }
 }
