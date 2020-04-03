@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -12,18 +11,27 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.mygdx.magegame.TileSet;
-import com.mygdx.magegame.model.World;
+import com.mygdx.magegame.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+Класс Player.
+ Для клиента: обрабатывает нажатия с клавиатуры, управление мышкой осуществляется миром
+ Для сетевой игры: нажатия клавиатуры обрабатываем здесь, записывая в массив, что была нажата кнопка, игрок дальше сам
+ обработает нужную функцию,
+*/
 public class Player extends GameObject {
+
+    // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
+    public static final float SPEED = 2f;
+    // размер конст
+    public static final float SIZE = 1.5f; // В размерах одной клетки (32*32)
+
     //состояние
     public enum State {
         NONE, WALKING, DEAD
-    }
-    public static enum Direction {
-        LEFT, RIGHT, UP, DOWN, NONE
     }
     enum Keys {
         LEFT, RIGHT, UP, DOWN
@@ -36,17 +44,21 @@ public class Player extends GameObject {
         direction.put(Keys.DOWN, false);
     };
 
-    // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
-    public static final float SPEED = 2f;
-    // размер конст
-    public static final float SIZE = 1.5f; // В размерах одной клетки (32*32)
-
     //используется для вычисления движения
     Vector2 velocity = new Vector2();
+    //конечная точка пути
+    Vector3 endPoint = new Vector3();
+
+    // угол, по которому движется
+    float angleDirection;
 
     TextureRegion object_texture_region; // То, что рисуется
     static final TileSet parent_tileSet = new TileSet(Gdx.files.internal("spriteset_mages.png"), 32); // Откуда берутся текстурки
+    // угол, куда смотрит текстура
+    float angleTexture;
 
+
+    State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
     public Player(World world, int x, int y, int type){
@@ -107,9 +119,17 @@ public class Player extends GameObject {
     }
 
     public void handleMouseInput(Vector2 mouseCoords){
-        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.sub(position).toString() + mouseCoords.angle());
+        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
+        endPoint.x = mouseCoords.x;
+        endPoint.y = mouseCoords.y;
+        mouseCoords.sub(position.x + SIZE/2, position.y + SIZE/2);
+        if(state != State.WALKING)
+            state = State.WALKING;
+        else // если шли до этого
+            resetVelocity();
         velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
         velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
+        updateAngleDirection();
         Gdx.app.log("Velos", velocity.toString());
     }
 
@@ -118,6 +138,9 @@ public class Player extends GameObject {
         leftReleased();
         downReleased();
         upReleased();
+    }
+
+    public void resetVelocity(){
         getVelocity().x = 0;
         getVelocity().y = 0;
     }
@@ -134,15 +157,16 @@ public class Player extends GameObject {
         if ((direction.get(Keys.LEFT) && direction.get(Keys.RIGHT)) ||
                 (!direction.get(Keys.LEFT) && (!direction.get(Keys.RIGHT))))
             getVelocity().x = 0;
-
         if ((direction.get(Keys.UP) && direction.get(Keys.DOWN)) ||
                 (!direction.get(Keys.UP) && (!direction.get(Keys.DOWN))))
             getVelocity().y = 0;
+        updateAngleDirection();
     }
 
-    public Vector2 getVelocity() {
-        return velocity;
-    }
+    private void updateAngleDirection() { angleDirection = getVelocity().angle(); }
+
+
+    public Vector2 getVelocity() { return velocity; }
 
     public void set_texture(){
 
@@ -157,9 +181,14 @@ public class Player extends GameObject {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        // если смотрим не туда, куда идем
+        if(angleTexture!= angleDirection)
+        {
+            angleTexture = angleDirection;
+        }
         batch.draw(object_texture_region, getX(),getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
-                getScaleX(), getScaleY(), getRotation());
+                getScaleX(), getScaleY(), angleTexture);
 
     }
 
@@ -176,8 +205,15 @@ public class Player extends GameObject {
     }
 
     private void updatePosition(float delta) {
-        this.position.add(velocity.x*delta, velocity.y*delta);
-        this.setPosition(position.x, position.y);
+        if(state == State.WALKING)
+        {
+            this.position.add(velocity.x*delta, velocity.y*delta, 0);
+            this.setPosition(position.x, position.y);
+            if(position.epsilonEquals(endPoint, SIZE/2)) {
+                state = State.NONE;
+                resetVelocity();
+            }
+        }
     }
 
 

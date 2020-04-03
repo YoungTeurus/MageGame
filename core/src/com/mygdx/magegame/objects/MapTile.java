@@ -1,10 +1,8 @@
 package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.mygdx.magegame.TileSet;
-import com.mygdx.magegame.model.World;
+import com.mygdx.magegame.world.World;
 
 public class MapTile extends GameObject {
     TextureRegion object_texture_region;

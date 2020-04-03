@@ -1,4 +1,4 @@
-package com.mygdx.magegame;
+package com.mygdx.magegame.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -10,7 +10,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.mygdx.magegame.model.World;
+import com.mygdx.magegame.MageGame;
+import com.mygdx.magegame.world.World;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.TextObject;
@@ -143,9 +144,9 @@ public class GameScreen implements Screen, InputProcessor {
 
         //camera.update(); // Обновление камеры
 
-        game.batch.begin();
+        game.getBatch().begin();
         for (GameObject current_text: world.texts){
-            current_text.draw(game.batch, 1);
+            current_text.draw(game.getBatch(), 1);
         }
 
         // Отрисовка сетки:
@@ -180,11 +181,11 @@ public class GameScreen implements Screen, InputProcessor {
                 pixmap.dispose();
             }
             // Отрисовка сетки
-            game.batch.draw(pixmaptex,
+            game.getBatch().draw(pixmaptex,
                     (world.getCamera().position.x%32),
                     (world.getCamera().position.y%32));
         }
-        game.batch.end();
+        game.getBatch().end();
 //
 //
         // Обработка нажатий на окно
