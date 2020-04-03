@@ -65,9 +65,9 @@ public class Player extends GameObject {
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
-    public Player(World world, int x, int y, int type){
+    public Player(World world, int x, int y, int z, int type){
         super(world);
-        set_pos(x, y);
+        set_pos(x, y, z);
         this.type = type;
         set_texture();
         setRotation(270);
