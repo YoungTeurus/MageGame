@@ -60,7 +60,7 @@ public class World extends Stage {
 
         font = new BitmapFont();
         texts = new Array<>();
-        map = new TiledLayer();
+        map = new TiledLayer(this);
         addActor(map);
 
         createWorld();

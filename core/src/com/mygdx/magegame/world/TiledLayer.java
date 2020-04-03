@@ -1,18 +1,23 @@
 package com.mygdx.magegame.world;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Array;
 
 public class TiledLayer extends Group {
 
+    World parent_world;
     Array<Group> layers;
     public int top_level;
     public int bottom_level;
 
-    public TiledLayer(){
+    public TiledLayer(World parent_world){
         layers = new Array<>();
         layers.add(new Group()); // Нулевой уровень
+        this.parent_world = parent_world;
         top_level = bottom_level = 0;
     }
 
@@ -50,9 +55,20 @@ public class TiledLayer extends Group {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        parent_world.getBatch().enableBlending();
+        parent_world.getBatch().setBlendFunctionSeparate(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA,
+                GL20.GL_ONE, GL20.GL_ZERO);
         //super.draw(batch, parentAlpha);
         for(int i = bottom_level; i <= top_level; i++){
-            get_layer(i).draw(batch, parentAlpha);
+            if (i <= parent_world.current_z) {
+                get_layer(i).draw(batch, parentAlpha);
+                continue;
+            }
+            if (i == parent_world.current_z + 1){ // Следующий слой над текущим
+                parent_world.getBatch().setColor(1,1,1,0.5f);
+                get_layer(i).draw(batch, parentAlpha);
+                parent_world.getBatch().setColor(1,1,1,1);
+            }
         }
     }
 

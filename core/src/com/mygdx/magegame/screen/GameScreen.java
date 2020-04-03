@@ -44,7 +44,7 @@ public class GameScreen implements Screen, InputProcessor {
         this.game = game;
 
         // Создание объектов полей
-        world = new World(50,20);
+        world = new World(10,10);
 
 
         // Создание камеры
