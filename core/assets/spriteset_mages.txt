@@ -1,0 +1,4 @@
+256
+32
+Player
+# id human_name

@@ -31,7 +31,7 @@ public class World extends Stage {
     public Player player;
     public int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
     // массив объектов на карте
-    TiledLayer map;
+    public TiledLayer map;
     public Array<GameObject> texts;
 
     // ширина и высота мира
@@ -46,6 +46,9 @@ public class World extends Stage {
     private Vector2 mouseCoords2 = new Vector2(0,0);
     private boolean mouseRightButtonPressed = false;
 
+    // Тестовая функция:
+    public boolean need_to_draw_other_level_rather_than_current = true; // Нужно ли отрисовывать другие уровни кроме текущего
+
     public World(int worldWidth, int worldHeight)
     {
         super(new ExtendViewport(worldWidth, worldHeight));
@@ -55,7 +58,7 @@ public class World extends Stage {
 
         // Загрузка всех тайлсетов
         for(int tileset_id = 0; tileset_id < num_of_tilesets; tileset_id++){
-            tileSets[tileset_id] = new TileSet(Gdx.files.internal(tilesets_filenames[tileset_id]), tilesets_sizes[tileset_id]);
+            tileSets[tileset_id] = new TileSet(tileset_id);
         }
 
         font = new BitmapFont();
