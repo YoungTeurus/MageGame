@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -24,13 +25,13 @@ import java.util.regex.Pattern;
 import static com.mygdx.magegame.Consts.*;
 
 public class World extends Stage {
-    // public TileSet tileSet; // Тайлсет со всеми тайлами карты - возможно в будущем сделать массив
-
-    public TileSet[] tileSets = new TileSet[num_of_tilesets];
+    public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
 
     // наш игрок
     public Player player;
+    public int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
     // массив объектов на карте
+    TiledLayer map;
     public Array<GameObject> texts;
 
     // ширина и высота мира
@@ -50,35 +51,51 @@ public class World extends Stage {
 
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
-        //tileSet = new TileSet(, 32); // Загрузка тайлсета
 
         // Загрузка всех тайлсетов
         for(int tileset_id = 0; tileset_id < num_of_tilesets; tileset_id++){
             tileSets[tileset_id] = new TileSet(Gdx.files.internal(tilesets_filenames[tileset_id]), tilesets_sizes[tileset_id]);
         }
+
         font = new BitmapFont();
         texts = new Array<>();
+        map = new TiledLayer();
+
         createWorld();
     }
 
     public void add_object(GameObject added_object){
-        Gdx.app.log("Children",String.format("cildern num %d", getRoot().getChildren().size));
         boolean is_blocked = false;
-        for (int i = 0; i < getRoot().getChildren().size; i++) {
-            if (getRoot().getChild(i).getX() == added_object.getX() &&
-                    getRoot().getChild(i).getY() == added_object.getY()){
+        Group layer_to_work_with = map.get_layer((int)added_object.position.z);
+        Gdx.app.log("Children",String.format("cildern num %d", layer_to_work_with.getChildren().size));
+        for (int i = 0; i < layer_to_work_with.getChildren().size; i++) {
+            if ( // Если координаты полностью совпадают
+               ((GameObject)layer_to_work_with.getChild(i)).position.x == added_object.position.x
+            && ((GameObject)layer_to_work_with.getChild(i)).position.y == added_object.position.y
+            // && ((GameObject)layer_to_work_with.getChild(i)).position.z == added_object.position.z // Z не нужно проверять, ведь все сейчас на одном уровне?
+            )
+            {
                 Gdx.app.log("Children", "this tile is blocked");
                 is_blocked = true;
+                break;
             }
+            //if (getRoot().getChild(i).getX() == added_object.getX() &&
+            //        getRoot().getChild(i).getY() == added_object.getY()){
+            //
+            //}
         }
         if (!is_blocked){
             Gdx.app.log("Children", "placed" + added_object.toString());
-            addActor(added_object);
+
+            map.get_layer((int)added_object.position.z).addActor(added_object);
+
+            //addActor(added_object);
         }
     }
 
     private void createWorld(){
-        player = new Player(this, 0,0,0);
+        current_z = 0;
+        player = new Player(this, 0,0,0, 0);
     }
 
     public Player getPlayer() {
@@ -139,7 +156,6 @@ public class World extends Stage {
         return actor;
     }
 
-
     @Override
     public void dispose() {
         super.dispose();
@@ -150,6 +166,7 @@ public class World extends Stage {
     }
 
     public void save(String filename){
+        // Сохраняет мир в файл
         try {
             FileWriter fw = new FileWriter(filename);
 
@@ -163,6 +180,7 @@ public class World extends Stage {
     }
 
     public void load(String filename){
+        // Загрузка мира из файла
         try{
             getRoot().clear();
 
@@ -170,11 +188,11 @@ public class World extends Stage {
             Scanner scan = new Scanner(fr);
 
             int line = 0;
-            Pattern pattern1 = Pattern.compile("\\w+\\{.+\\}"); // Поиск строк, подходящих для наших объектов
-            Pattern pattern2 = Pattern.compile("((\\d+,\\d+)([,][\\s])?){3}"); // Поиск координат в каждой из строк
-            Pattern pattern3 = Pattern.compile("\\d+,\\d+"); // Поиск одного float
+            Pattern pattern1 = Pattern.compile("\\w+\\{.+}"); // Поиск строк, подходящих для наших объектов
+            Pattern pattern2 = Pattern.compile("((-?\\d+,-?\\d+)([,][\\s])?){3}"); // Поиск координат в каждой из строк
+            Pattern pattern3 = Pattern.compile("-?\\d+,-?\\d+"); // Поиск одного float
             Pattern pattern4 = Pattern.compile("\\w+\\{"); // Поиск имени объекта
-            Pattern pattern5 = Pattern.compile("\\d+"); // Поиск всех остальных аргуметов
+            Pattern pattern5 = Pattern.compile("-?\\d+"); // Поиск всех остальных аргуметов
 
             float[] for_coords = new float[3];
             String[] other_params = new String[10]; // До 10-и аргументов
@@ -186,10 +204,9 @@ public class World extends Stage {
                 Matcher matcher2 = pattern2.matcher(cur_line);
                 Matcher matcher3 = pattern3.matcher(cur_line);
                 Matcher matcher4 = pattern4.matcher(cur_line);
-                if (matcher1.find()){
+                if (matcher1.find() && matcher4.find()){
                     Gdx.app.log("Load", "String" + line + " : was found pattern 1");
                     // Находим название класса
-                    matcher4.find();
                     int start = matcher4.start();
                     int end = matcher4.end();
                     String name_of_class = cur_line.substring(start, end-1);
@@ -226,7 +243,8 @@ public class World extends Stage {
                         MapTile new_object = new MapTile(this,
                                 Integer.parseInt(other_params[0]),
                                 Integer.parseInt(other_params[1]),
-                                (int)for_coords[0],(int)for_coords[1],true);
+                                (int)for_coords[0],(int)for_coords[1],(int)for_coords[2],
+                                true);
                         add_object(new_object);
                     }
 

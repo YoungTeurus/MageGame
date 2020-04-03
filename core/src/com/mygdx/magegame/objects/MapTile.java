@@ -9,12 +9,12 @@ public class MapTile extends GameObject {
     int id;
     int tileset_id;
 
-    public MapTile(World world,int tileset_id, int id, int x, int y, boolean is_camera_oriented){
+    public MapTile(World world,int tileset_id, int id, int x, int y, int z, boolean is_camera_oriented){
         // Создаёт квадратный объект из текстуры с размером стороны - size.
         // Текстура выбирается по index-у
         super(world);
         this.tileset_id = tileset_id;
-        set_pos(x, y);
+        set_pos(x, y, z);
         this.is_camera_oriented = is_camera_oriented;
         set_texture(id);
     }

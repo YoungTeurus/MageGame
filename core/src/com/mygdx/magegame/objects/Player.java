@@ -42,7 +42,7 @@ public class Player extends GameObject {
         direction.put(Keys.RIGHT, false);
         direction.put(Keys.UP, false);
         direction.put(Keys.DOWN, false);
-    };
+    }
 
     //используется для вычисления движения
     Vector2 velocity = new Vector2();
@@ -61,9 +61,9 @@ public class Player extends GameObject {
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
-    public Player(World world, int x, int y, int type){
+    public Player(World world, int x, int y, int z, int type){
         super(world);
-        set_pos(x, y);
+        set_pos(x, y, z);
         this.type = type;
         set_texture();
         setBounds(position.x, position.y, SIZE, SIZE);

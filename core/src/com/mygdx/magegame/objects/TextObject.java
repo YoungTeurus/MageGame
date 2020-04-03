@@ -7,11 +7,11 @@ public class TextObject extends GameObject {
     boolean is_camera_oriented; // Должен ли объект отрисовываться с поправкой на камеру
     String text;
 
-    public TextObject(World world, int x, int y, String text, boolean is_camera_oriented) {
+    public TextObject(World world, int x, int y, int z, String text, boolean is_camera_oriented) {
         super(world);
         this.text = text;
         this.is_camera_oriented = is_camera_oriented;
-        set_pos(x, y);
+        set_pos(x, y, z);
     }
 
     @Override

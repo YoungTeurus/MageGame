@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.mygdx.magegame.world.World;
 
 public abstract class GameObject extends Actor {
-    Vector3 position;
+    public Vector3 position;
     boolean is_camera_oriented;
     World parent_world;
 
@@ -20,9 +20,9 @@ public abstract class GameObject extends Actor {
         super.draw(batch, parentAlpha);
     }
 
-    public void set_pos(int x, int y) {
+    public void set_pos(int x, int y, int z) {
         // Устанавилвает позицию вектора положения
-        position.set(x, y, 0);
+        position.set(x, y, z);
     }
 
 
