@@ -33,7 +33,7 @@ public class Player extends GameObject {
 
     //состояние
     public enum State {
-        NONE, WALKING, DEAD
+        NONE, WALKING, STOPED
     }
     // enum Keys {LEFT, RIGHT, UP, DOWN}
     enum Keys {STOP, ABILITY_1, ABILITY_2, ABILITY_3, ABILITY_4, ABILITY_5, ABILITY_6}
@@ -134,7 +134,7 @@ public class Player extends GameObject {
     private void processInput() {
         if (direction.get(Keys.STOP)){
             resetVelocity();
-            state = State.NONE;
+            state = State.STOPED;
         }
     }
     /*private void processInput() {
