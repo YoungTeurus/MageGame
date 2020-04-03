@@ -95,6 +95,18 @@ public class World extends Stage {
         }
     }
 
+    public void remove_object(int x, int y, int z){
+        Group layer_to_work_with = map.get_layer(z);
+        for (int i = 0; i < layer_to_work_with.getChildren().size; i++) {
+            if (
+                ((GameObject)layer_to_work_with.getChild(i)).position.x == x &&
+                ((GameObject)layer_to_work_with.getChild(i)).position.y == y )
+            {
+                layer_to_work_with.removeActor(layer_to_work_with.getChild(i));
+            }
+        }
+    }
+
     private void createWorld(){
         current_z = 0;
         player = new Player(this, 0,0,0, 0);

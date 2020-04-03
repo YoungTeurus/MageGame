@@ -210,24 +210,16 @@ public class GameScreen implements Screen, InputProcessor {
                 // Координаты добавляемого объекта
                 debug_tool.set_text(String.format("World coords: (%d, %d, %d)",actual_x,actual_y, world.current_z));
 
-                MapTile new_go = new MapTile(world,0,id_of_place_tile,actual_x, actual_y,world.current_z, true);
-
-                // DONE(?): Нужно ЗАМЕЩАТЬ тайлы на полу (если они там есть), а не накладывать новые*
-                // * - На самом деле верхний комментарий не верен на все 100. Есть некоторые текстуры, которые ДОЛЖНЫ накладываться
-                // поверх других, например, колонны. Но так как мир у нас с "глубиной", есть смысл выносить их на отдельный уровень.
-                // Так что да: действительно нужно ЗАМЕЩАТЬ тайлы.
-                //
-                // Очень грубо такое можно сделать с помощью проверки всех тайлов данного уровня и удаления того, чьи координаты
-                // совпадают с добавляемым тайлом. Почему плохо - такое сработает, если все тайлы поставлены ОЧЕНЬ чётко и
-                // точно (что, в общем-то, пока что соблюдается).
-
-                world.add_object(new_go);
-
-                //world.add_object(new_go, actual_x, actual_y);
-
-                //Gdx.app.log("Tag",String.format("%d, %d", (int)camera.position.x, (int)camera.position.y));
-
-                was_tile_set = true;
+                if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+                    // Если зажат SHIFT, то пробуем удалить тайл
+                    world.remove_object(actual_x,actual_y,world.current_z);
+                }
+                else{
+                    // Иначе доавбляем его
+                    MapTile new_go = new MapTile(world,0,id_of_place_tile,actual_x, actual_y,world.current_z, true);
+                    world.add_object(new_go);
+                    was_tile_set = true;
+                }
             }
         }
         else {
