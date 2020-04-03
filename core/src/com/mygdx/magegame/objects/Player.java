@@ -107,7 +107,8 @@ public class Player extends GameObject {
     }
 
     public void handleMouseInput(Vector2 mouseCoords){
-        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.sub(position).toString() + mouseCoords.angle());
+        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
+        mouseCoords.sub(position.x, position.y);
         velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
         velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
         Gdx.app.log("Velos", velocity.toString());
@@ -176,7 +177,7 @@ public class Player extends GameObject {
     }
 
     private void updatePosition(float delta) {
-        this.position.add(velocity.x*delta, velocity.y*delta);
+        this.position.add(velocity.x*delta, velocity.y*delta, 0);
         this.setPosition(position.x, position.y);
     }
 
