@@ -44,6 +44,7 @@ public class World extends Stage {
     // чтобы каждый раз их не создавать
     private Vector3 mouseCoords3 = new Vector3(0,0, 0);
     private Vector2 mouseCoords2 = new Vector2(0,0);
+    private boolean mouseRightButtonPressed = false;
 
     public World(int worldWidth, int worldHeight)
     {
@@ -114,18 +115,41 @@ public class World extends Stage {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         boolean b = super.touchDown(screenX, screenY, pointer, button);
 
+        updateMouseCoords(screenX, screenY);
+        // пока что всегда передаем правый клик игроку
+        if(button == Input.Buttons.RIGHT) {
+            Gdx.app.log("Mouse", "PRESSED");
+            player.handleMouseInput(mouseCoords2);
+            mouseRightButtonPressed = true;
+        }
+        //moveSelected(mouseCoords2);
+        return true;
+    }
+
+    private void updateMouseCoords(int screenX, int screenY) {
         mouseCoords3.x = screenX;
         mouseCoords3.y = screenY;
         // получили координаты клика мышкой относительно нашего мира
         getCamera().unproject(mouseCoords3);
         mouseCoords2.x = mouseCoords3.x;
         mouseCoords2.y = mouseCoords3.y;
-        // пока что всегда передаем правый клик игроку
-        if(button == Input.Buttons.RIGHT && selectedActor != player)
-            player.handleMouseInput(mouseCoords2);
+    }
 
-        //moveSelected(mouseCoords2);
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        super.touchDragged(screenX, screenY, pointer);
+        // если зажата правая кнопка мышки, и она перемещается, за ней едет наш игрок
+        if(mouseRightButtonPressed && player.getState() == Player.State.WALKING) {
+            updateMouseCoords(screenX, screenY);
+            player.handleMouseInput(mouseCoords2);
+        }
         return true;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        //при движении мышью
+        return super.mouseMoved(screenX, screenY);
     }
 
     private void moveSelected(Vector2 mouseCoords){
@@ -136,13 +160,15 @@ public class World extends Stage {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         super.touchUp(screenX, screenY, pointer, button);
-        resetSelected();
+        if(button == Input.Buttons.RIGHT)
+            Gdx.app.log("Mouse", "RELEASED");
+            mouseRightButtonPressed = false;
         return true;
     }
 
     private void resetSelected(){
-        if(selectedActor != null && selectedActor instanceof Player)
-            ((Player)selectedActor).resetWay();
+        if(selectedActor != null && selectedActor instanceof Player);
+            //((Player)selectedActor).resetWay();
     }
 
 

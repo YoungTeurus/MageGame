@@ -2,6 +2,7 @@ package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -28,21 +29,24 @@ public class Player extends GameObject {
     public static final float SPEED = 2f;
     // размер конст
     public static final float SIZE = 1.5f; // В размерах одной клетки (32*32)
+    private static final float EPS = SIZE / 15;
 
     //состояние
     public enum State {
         NONE, WALKING, DEAD
     }
-    enum Keys {
-        LEFT, RIGHT, UP, DOWN
-    }
+    // enum Keys {LEFT, RIGHT, UP, DOWN}
+    enum Keys {STOP, ABILITY_1, ABILITY_2, ABILITY_3, ABILITY_4, ABILITY_5, ABILITY_6}
     static Map<Keys, Boolean> direction = new HashMap<Keys, Boolean>();
     static void initDirection(){
-        direction.put(Keys.LEFT, false);
-        direction.put(Keys.RIGHT, false);
-        direction.put(Keys.UP, false);
-        direction.put(Keys.DOWN, false);
-    }
+        direction.put(Keys.STOP, false);
+        direction.put(Keys.ABILITY_1, false);
+        direction.put(Keys.ABILITY_2, false);
+        direction.put(Keys.ABILITY_3, false);
+        direction.put(Keys.ABILITY_4, false);
+        direction.put(Keys.ABILITY_5, false);
+        direction.put(Keys.ABILITY_6, false);
+    };
 
     //используется для вычисления движения
     Vector2 velocity = new Vector2();
@@ -61,11 +65,13 @@ public class Player extends GameObject {
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
-    public Player(World world, int x, int y, int z, int type){
+    public Player(World world, int x, int y, int type){
         super(world);
-        set_pos(x, y, z);
+        set_pos(x, y);
         this.type = type;
         set_texture();
+        setRotation(270);
+        setOrigin(SIZE/2, SIZE/2);
         setBounds(position.x, position.y, SIZE, SIZE);
         addListener(
                 new InputListener(){
@@ -77,15 +83,9 @@ public class Player extends GameObject {
                     }
                     @Override
                     public boolean keyUp(InputEvent event, int keycode) {
-                        if ( keycode == Input.Keys.W )
-                            upReleased();
                         if ( keycode == Input.Keys.S )
-                            downReleased();
-                        if ( keycode == Input.Keys.A )
-                            leftReleased();
-                        if ( keycode == Input.Keys.D )
-                            rightReleased();
-                        processInput();
+                            StopReleased();
+                        //processInput();
                         return true;
                     }
                     @Override
@@ -95,8 +95,7 @@ public class Player extends GameObject {
                     }
                     @Override
                     public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                        // если отжали кнопочку на нашем игроке никуда не идем
-	        	        resetWay();
+                        // если отжали кнопочку на нашем игроке
                     }
                 }
         );
@@ -104,14 +103,8 @@ public class Player extends GameObject {
     }
 
     private void handleInput(int keycode) {
-        if ( keycode == Input.Keys.W )
-            upPressed();
         if ( keycode == Input.Keys.S )
-            downPressed();
-        if ( keycode == Input.Keys.A )
-            leftPressed();
-        if ( keycode == Input.Keys.D )
-            rightPressed();
+            StopPressed();
     }
 
     public Vector3 getPosition() {
@@ -119,10 +112,10 @@ public class Player extends GameObject {
     }
 
     public void handleMouseInput(Vector2 mouseCoords){
-        Gdx.app.log("Velos",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
+        Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
         endPoint.x = mouseCoords.x;
         endPoint.y = mouseCoords.y;
-        mouseCoords.sub(position.x + SIZE/2, position.y + SIZE/2);
+        mouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
         if(state != State.WALKING)
             state = State.WALKING;
         else // если шли до этого
@@ -133,19 +126,18 @@ public class Player extends GameObject {
         Gdx.app.log("Velos", velocity.toString());
     }
 
-    public void resetWay(){
-        rightReleased();
-        leftReleased();
-        downReleased();
-        upReleased();
-    }
-
     public void resetVelocity(){
         getVelocity().x = 0;
         getVelocity().y = 0;
     }
 
     private void processInput() {
+        if (direction.get(Keys.STOP)){
+            resetVelocity();
+            state = State.NONE;
+        }
+    }
+    /*private void processInput() {
         if (direction.get(Keys.LEFT))
             getVelocity().x = -SPEED;
         if (direction.get(Keys.RIGHT))
@@ -161,7 +153,7 @@ public class Player extends GameObject {
                 (!direction.get(Keys.UP) && (!direction.get(Keys.DOWN))))
             getVelocity().y = 0;
         updateAngleDirection();
-    }
+    }*/
 
     private void updateAngleDirection() { angleDirection = getVelocity().angle(); }
 
@@ -182,21 +174,21 @@ public class Player extends GameObject {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         // если смотрим не туда, куда идем
-        if(angleTexture!= angleDirection)
+        if(getRotation() != angleDirection)
         {
-            angleTexture = angleDirection;
+            setRotation(angleDirection);
         }
-        batch.draw(object_texture_region, getX(),getY(),
+        //Gdx.app.log("PLAYER", "Rotation "+ getRotation());
+        Texture t = object_texture_region.getTexture();
+        batch.draw(object_texture_region, getX(), getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
-                getScaleX(), getScaleY(), angleTexture);
-
+                getScaleX(), getScaleY(), getRotation());
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
         updatePosition(delta);
-        // Gdx.app.log("Player coord", position.toString() + velocity.toString());
     }
 
     public Actor hit(float x, float y, boolean touchable) {
@@ -207,9 +199,10 @@ public class Player extends GameObject {
     private void updatePosition(float delta) {
         if(state == State.WALKING)
         {
+            //Gdx.app.log("PLAYER",  position.toString()+" "+endPoint.toString() + " " + velocity.toString());
             this.position.add(velocity.x*delta, velocity.y*delta, 0);
             this.setPosition(position.x, position.y);
-            if(position.epsilonEquals(endPoint, SIZE/2)) {
+            if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
                 state = State.NONE;
                 resetVelocity();
             }
@@ -217,35 +210,15 @@ public class Player extends GameObject {
     }
 
 
-    public void leftPressed() {
-        direction.get(direction.put(Keys.LEFT, true));
+    public void StopPressed() {
+        direction.get(direction.put(Keys.STOP, true));
     }
 
-    public void rightPressed() {
-        direction.get(direction.put(Keys.RIGHT, true));
+    public void StopReleased() {
+        direction.get(direction.put(Keys.STOP, false));
     }
 
-    public void upPressed() {
-        direction.get(direction.put(Keys.UP, true));
-    }
-
-    public void downPressed() {
-        direction.get(direction.put(Keys.DOWN, true));
-    }
-
-    public void leftReleased() {
-        direction.get(direction.put(Keys.LEFT, false));
-    }
-
-    public void rightReleased() {
-        direction.get(direction.put(Keys.RIGHT, false));
-    }
-
-    public void upReleased() {
-        direction.get(direction.put(Keys.UP, false));
-    }
-
-    public void downReleased() {
-        direction.get(direction.put(Keys.DOWN, false));
+    public State getState() {
+        return state;
     }
 }
