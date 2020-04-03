@@ -1,25 +1,18 @@
-package com.mygdx.magegame.model;
+package com.mygdx.magegame.world;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.magegame.TileSet;
-import com.mygdx.magegame.legasy.GameObjectInterface;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
-import com.mygdx.magegame.objects.TextObject;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -103,18 +96,24 @@ public class World extends Stage {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         boolean b = super.touchDown(screenX, screenY, pointer, button);
+
         mouseCoords3.x = screenX;
         mouseCoords3.y = screenY;
+        // получили координаты клика мышкой относительно нашего мира
         getCamera().unproject(mouseCoords3);
         mouseCoords2.x = mouseCoords3.x;
         mouseCoords2.y = mouseCoords3.y;
-        moveSelected(mouseCoords2);
+        // пока что всегда передаем правый клик игроку
+        if(button == Input.Buttons.RIGHT && selectedActor != player)
+            player.handleMouseInput(mouseCoords2);
+
+        //moveSelected(mouseCoords2);
         return true;
     }
 
     private void moveSelected(Vector2 mouseCoords){
-        if(selectedActor != null && selectedActor instanceof Player)
-            ((Player)selectedActor).handleMouseInput(mouseCoords);
+        if(selectedActor != null); // какие-то события мира актерам от мышки
+            //((Player)selectedActor).handleMouseInput(mouseCoords);
     }
 
     @Override

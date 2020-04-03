@@ -1,9 +1,7 @@
 package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.mygdx.magegame.model.World;
+import com.mygdx.magegame.world.World;
 
 public class TextObject extends GameObject {
     boolean is_camera_oriented; // Должен ли объект отрисовываться с поправкой на камеру

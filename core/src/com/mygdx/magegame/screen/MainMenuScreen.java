@@ -1,8 +1,7 @@
-package com.mygdx.magegame;
+package com.mygdx.magegame.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -10,9 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
-import static com.mygdx.magegame.Consts.window_h;
-import static com.mygdx.magegame.Consts.window_w;
+import com.mygdx.magegame.MageGame;
+import com.mygdx.magegame.screen.GameScreen;
 
 public class MainMenuScreen implements Screen{
     final MageGame game;
@@ -27,19 +25,19 @@ public class MainMenuScreen implements Screen{
     public MainMenuScreen(final MageGame game)
     {
         this.game = game;
-        gui = new Stage(new ScreenViewport(), game.batch);
+        gui = new Stage(new ScreenViewport(), game.getBatch());
 
         Gdx.input.setInputProcessor(gui);
 
-        gameName = new Label("MAGE GAME", game.skin);
+        gameName = new Label("MAGE GAME", game.getSkin());
         gameName.setPosition(Gdx.graphics.getWidth()/2-gameName.getWidth()/2, Gdx.graphics.getHeight()-100);
         gui.addActor(gameName);
 
-        buttonStart = new TextButton("Play", game.skin);
+        buttonStart = new TextButton("Play", game.getSkin());
         buttonStart.setPosition(Gdx.graphics.getWidth()/2-buttonStart.getWidth()/2, Gdx.graphics.getHeight()-200);
         gui.addActor(buttonStart);
 
-        buttonExit = new TextButton("Exit", game.skin);
+        buttonExit = new TextButton("Exit", game.getSkin());
         buttonExit.setPosition(Gdx.graphics.getWidth()/2-buttonExit.getWidth()/2, Gdx.graphics.getHeight()-300);
         gui.addActor(buttonExit);
 
