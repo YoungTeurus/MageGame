@@ -139,8 +139,10 @@ public class World extends Stage {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         super.touchDragged(screenX, screenY, pointer);
-        // если зажата правая кнопка мышки, и она перемещается, за ней едет наш игрок
-        if(mouseRightButtonPressed && player.getState() == Player.State.WALKING) {
+        // если зажата правая кнопка мышки, и она перемещается, за ней едет наш персонаж
+        // если игрок остановил персонажа принудительно, мы
+        if(mouseRightButtonPressed &&
+                (player.getState() == Player.State.WALKING || player.getState() == Player.State.NONE)) {
             updateMouseCoords(screenX, screenY);
             player.handleMouseInput(mouseCoords2);
         }
