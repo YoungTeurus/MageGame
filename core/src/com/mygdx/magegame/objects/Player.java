@@ -120,42 +120,55 @@ public class Player extends GameObject {
     @Override
     public void onCollision(GameObject gameObject) {
         // обработка сстолкновения со статическим объектом или игроком
-        Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
+        //Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
         // зашли слева
-        if(this.getX() + this.getWidth() > gameObject.getX()){
-            if(velocity.x != 0)
-                //this.position.x = previosPoint.x;
-                this.position.x = gameObject.getX() - this.getWidth() - 0.1f;
-            velocity.x = 0;
-            this.setColor(0,255,0,1);
-        }
-        // зашли справа
-        else if(this.getX() < gameObject.getX() + gameObject.getWidth()){
-            if(velocity.x != 0)
-                //this.position.x = previosPoint.x;
-                this.position.x = gameObject.getX()+ gameObject.getWidth() + 0.1f;
-            velocity.x = 0;
-            this.setColor(0,255,0,1);
-        }
-
-        // зашли снизу
-        if(this.getY() + this.getHeight() > gameObject.getY()){
+        Vector2 temp = new Vector2(
+                getX() + getWidth()/2 -gameObject.getX()-gameObject.getWidth()/2,
+                getY() + getHeight()/2 -gameObject.getY()-gameObject.getHeight()/2);
+        Gdx.app.log("PLAYER", "COLLISION ANGLE" + temp.angle());
+        float collisionAngle = temp.angle(); // угол с которого пересечен обьект (0 справа)
+        // зашли сверху
+        if(collisionAngle > 45 && collisionAngle <= 135){
             if(velocity.y != 0)
                 //this.position.y = previosPoint.y;
-                this.position.y = gameObject.getY() - this.getHeight()  - 0.1f;
+                this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
             this.setColor(255,0,0,1);
             velocity.y = 0;
         }
-        // зашли сверху
-        else if(this.getY() < gameObject.getY() + gameObject.getHeight()){
+        // зашли слева
+        else if(collisionAngle > 135 && collisionAngle <= 225){
+            if(velocity.x != 0)
+                //this.position.y = previosPoint.y;
+                this.position.x = gameObject.getX() - this.getWidth() - EPS;
+            this.setColor(255,0,0,1);
+            velocity.x = 0;
+        }
+        // зашли снизу
+        else if(collisionAngle > 225 && collisionAngle <= 315){
+            if(velocity.y != 0)
+                //this.position.y = previosPoint.y;
+                this.position.y = gameObject.getY() - this.getHeight() - EPS;
+            this.setColor(255,0,0,1);
+            velocity.y = 0;
+        }
+        // зашли справа
+        else if(collisionAngle > 315 || collisionAngle <= 45){
+            if(velocity.x != 0)
+                //this.position.y = previosPoint.y;
+                this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
+            this.setColor(255,0,0,1);
+            velocity.x = 0;
+        }
+
+        /*if(this.getY() < gameObject.getY() + gameObject.getHeight()){
             if(velocity.y != 0)
                 //this.position.y = previosPoint.y;
                 this.position.y = gameObject.getY()+gameObject.getHeight() + 0.1f;
             this.setColor(255,0,0,1);
             velocity.y = 0;
-        }
+        }*/
         this.setPosition(position.x, position.y);
-        Gdx.app.log("PLAYER", "NEW POS " + position.toString());
+        //Gdx.app.log("PLAYER", "NEW POS " + position.toString());
     }
 
     private void handleInput(int keycode) {
