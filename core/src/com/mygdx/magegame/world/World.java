@@ -31,19 +31,19 @@ public class World extends Stage {
     CollisionDetector collisionDetector;
     //World worldBody;
     // наш игрок
-    public Player player;
-    public int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
+    Player player;
+    int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
     // массив объектов на карте
-    public TiledLayer map;
-    public Array<GameObject> texts;
+    TiledLayer map;
+    Array<GameObject> texts;
 
     // ширина и высота мира
-    public int worldWidth;
-    public int worldHeight;
+    int worldWidth;
+    int worldHeight;
     // Штука для отрисовки текстов
-    public BitmapFont font;
+    BitmapFont font;
 
-    public Actor selectedActor;
+    Actor selectedActor;
     // чтобы каждый раз их не создавать
     private Vector3 mouseCoords3 = new Vector3(0,0, 0);
     private Vector2 mouseCoords2 = new Vector2(0,0);
@@ -52,8 +52,7 @@ public class World extends Stage {
     // Тестовая функция:
     public boolean need_to_draw_other_level_rather_than_current = true; // Нужно ли отрисовывать другие уровни кроме текущего
 
-    public World(int worldWidth, int worldHeight)
-    {
+    public World(int worldWidth, int worldHeight){
         super(new ExtendViewport(worldWidth, worldHeight));
 
         this.worldWidth = worldWidth;
@@ -77,7 +76,8 @@ public class World extends Stage {
     public void add_object(GameObject added_object){
         boolean is_blocked = false;
         Group layer_to_work_with = map.get_layer((int)added_object.position.z);
-        Gdx.app.log("Children",String.format("cildern num %d", layer_to_work_with.getChildren().size));
+        if (DEBUG)
+            Gdx.app.log("Children",String.format("cildern num %d", layer_to_work_with.getChildren().size));
         for (int i = 0; i < layer_to_work_with.getChildren().size; i++) {
             if ( // Если координаты полностью совпадают
                ((GameObject)layer_to_work_with.getChild(i)).position.x == added_object.position.x
@@ -85,7 +85,8 @@ public class World extends Stage {
             // && ((GameObject)layer_to_work_with.getChild(i)).position.z == added_object.position.z // Z не нужно проверять, ведь все сейчас на одном уровне?
             )
             {
-                Gdx.app.log("Children", "this tile is blocked");
+                if (DEBUG)
+                    Gdx.app.log("Children", "this tile is blocked");
                 is_blocked = true;
                 break;
             }
@@ -95,7 +96,8 @@ public class World extends Stage {
             //}
         }
         if (!is_blocked){
-            Gdx.app.log("Children", "placed" + added_object.toString());
+            if (DEBUG)
+                Gdx.app.log("Children", "placed" + added_object.toString());
             if(added_object instanceof MapTile){
                 // если не проходимый добавим его к обрабатываемым объектам
                 if(((MapTile) added_object).is_passable == false)
@@ -126,10 +128,6 @@ public class World extends Stage {
         current_z = 0;
         player = new Player(this, 0,0,0, 0);
         collisionDetector.allControlledObjects.add(player);
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     @Override
@@ -280,7 +278,9 @@ public class World extends Stage {
                 Matcher matcher3 = pattern3.matcher(cur_line);
                 Matcher matcher4 = pattern4.matcher(cur_line);
                 if (matcher1.find() && matcher4.find()){
-                    Gdx.app.log("Load", "String" + line + " : was found pattern 1");
+                    if (DEBUG){
+                        Gdx.app.log("Load", "String" + line + " : was found pattern 1");
+                    }
                     // Находим название класса
                     int start = matcher4.start();
                     int end = matcher4.end();
@@ -290,14 +290,17 @@ public class World extends Stage {
                         start = matcher2.start();
                         end = matcher2.end();
                         String coords = cur_line.substring(start, end);
-                        Gdx.app.log("Load", "String" + line + " : was found pattern 2 :" + coords);
+                        if (DEBUG)
+                            Gdx.app.log("Load", "String" + line + " : was found pattern 2 :" + coords);
                         int i = 0;
                         while (matcher3.find()){
                             int startf = matcher3.start();
                             int endf = matcher3.end();
                             String stringf = cur_line.substring(startf, endf).replace(",",".");
                             float fl = Float.parseFloat(stringf);
-                            Gdx.app.log("Load", "String" + line + " : was found pattern 3 :" + fl);
+                            if (DEBUG) {
+                                Gdx.app.log("Load", "String" + line + " : was found pattern 3 :" + fl);
+                            }
                             for_coords[i] = fl;
                             i++;
                         }
@@ -310,7 +313,8 @@ public class World extends Stage {
                         start = matcher5.start();
                         end = matcher5.end();
                         other_params[i] = string_for_all_other_params.substring(start, end);
-                        Gdx.app.log("Load", "String" + line + " : was found pattern 5 :" + other_params[i]);
+                        if (DEBUG)
+                            Gdx.app.log("Load", "String" + line + " : was found pattern 5 :" + other_params[i]);
                         i++;
                     }
 
@@ -333,4 +337,27 @@ public class World extends Stage {
         Gdx.app.log("WORLD", "Walls added " + collisionDetector.allStaticObjects.size);
         Gdx.app.log("WORLD", "Colladed added " + collisionDetector.allControlledObjects.size);
     }
+
+
+    // Все get-еры и set-еры здесь
+    public  Player      getPlayer()                 {return player;}
+    //public  void        setPlayer(Player player)    {this.player = player;}
+
+    public  int         getCurrent_z()              {return current_z;}
+    public  void        setCurrent_z(int current_z) {this.current_z = current_z;}
+
+    public  TiledLayer  getMap()                    {return map;}
+
+    public  Array<GameObject>getTexts()             {return texts;}
+
+    public  int         getWorldWidth()             {return worldWidth;}
+    public  void        setWorldWidth(int worldWidth){this.worldWidth = worldWidth;}
+
+    public  int         getWorldHeight()            {return worldHeight;}
+    public  void        setWorldHeight(int worldHeight){this.worldHeight = worldHeight;}
+
+    public  BitmapFont  getFont()                   {return font;}
+
+    public  Actor       getSelectedActor()          {return selectedActor;}
+    public  void        setSelectedActor(Actor selectedActor){this.selectedActor = selectedActor;}
 }

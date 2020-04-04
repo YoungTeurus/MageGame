@@ -15,5 +15,6 @@ public class Consts {
             "spriteset_0", "spriteset_mages"
     };
     // public static final int num_of_settings_in_spriteset_files = 10; // Максимальное количество параметров в строке файла тайлсета
+    public static final boolean DEBUG = false;
 }
 

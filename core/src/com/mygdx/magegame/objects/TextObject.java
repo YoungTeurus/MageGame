@@ -18,13 +18,13 @@ public class TextObject extends GameObject {
     public void draw(Batch batch, float parentAlpha)
     {
         if (is_camera_oriented){
-            parent_world.font.draw(batch,
+            parent_world.getFont().draw(batch,
                     text,
                     position.x+parent_world.getCamera().position.x,
                     position.y+parent_world.getCamera().position.y);
         }
         else {
-            parent_world.font.draw(batch,
+            parent_world.getFont().draw(batch,
                     text,
                     position.x,
                     position.y);
@@ -33,9 +33,5 @@ public class TextObject extends GameObject {
 
     public void set_text(String text){
         this.text = text;
-    }
-
-    public void act(){
-
     }
 }

@@ -121,10 +121,6 @@ public class Player extends GameObject {
             StopPressed();
     }
 
-    public Vector3 getPosition() {
-        return position;
-    }
-
     public void handleMouseInput(Vector2 mouseCoords){
         //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
         endPoint.x = mouseCoords.x;
@@ -169,9 +165,6 @@ public class Player extends GameObject {
     }*/
 
     private void updateAngleDirection() { angleDirection = getVelocity().angle(); }
-
-
-    public Vector2 getVelocity() { return velocity; }
 
     public void set_texture(){
 
@@ -231,7 +224,9 @@ public class Player extends GameObject {
         direction.get(direction.put(Keys.STOP, false));
     }
 
-    public State getState() {
-        return state;
-    }
+
+    // Все get-еры и set-еры здесь
+    public  Vector2     getVelocity()                   { return velocity; }
+    public  void        setVelocity(Vector2 velocity)   {this.velocity = velocity;}
+    public  State       getState()                      {return state;}
 }
