@@ -81,7 +81,6 @@ public class Player extends GameObject {
         setRotation(270);
         setOrigin(SIZE/2, SIZE/2);
         setBounds(position.x, position.y, SIZE, SIZE);
-        phusBody = new Circle(position.x+SIZE/2, position.y+SIZE/2, SIZE);
         addListener(new CollisionListener(){
                         @Override
                         public void processCollision(GameObject gameObject, CollisionEvent.CollisionObjectType type) {
@@ -163,9 +162,7 @@ public class Player extends GameObject {
             StopPressed();
     }
 
-    public Vector3 getPosition() {
-        return position;
-    }
+
 
     public void handleMouseInput(Vector2 mouseCoords){
         //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
@@ -195,6 +192,7 @@ public class Player extends GameObject {
 
     private void updateAngleDirection() { angleDirection = getVelocity().angle(); }
 
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         // если смотрим не туда, куда идем
@@ -204,6 +202,7 @@ public class Player extends GameObject {
         }
         batch.setColor(this.getColor());
         //Gdx.app.log("PLAYER", "Rotation "+ getRotation());
+        Texture t = object_texture_region.getTexture();
         batch.draw(object_texture_region, getX(), getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
                 getScaleX(), getScaleY(), getRotation());
@@ -255,7 +254,6 @@ public class Player extends GameObject {
         direction.get(direction.put(Keys.STOP, false));
     }
 
-    public Vector2 getVelocity() { return velocity; }
 
     public void set_texture(){
 
@@ -268,12 +266,16 @@ public class Player extends GameObject {
                 2, 2);
     }
 
-    public State getState() {
-        return state;
-    }
+    public  Vector2     getVelocity()                   { return velocity; }
+    public  void        setVelocity(Vector2 velocity)   {this.velocity = velocity;}
+    public  State       getState()                      {return state;}
 
     public Vector3 getPreviosPoint() {
         return previosPoint;
+    }
+
+    public Vector3 getPosition() {
+        return position;
     }
 
     public void setPreviosPoint(Vector3 previosPoint) {

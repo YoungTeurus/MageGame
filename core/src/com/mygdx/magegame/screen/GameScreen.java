@@ -41,43 +41,13 @@ public class GameScreen implements Screen, InputProcessor {
     public GameScreen(final MageGame game){
         this.game = game;
 
-        // Создание объектов полей
+        // Создание мира
         world = new World(world_w,world_h);
-
-
-        // Создание камеры
-        //camera = new OrthographicCamera();
-        //camera.setToOrtho(true,0, 0);
 
         //topLevel = new Group(); // Actor-ы интерфейса идут сюда
         //mapLevel = new Group(); // Actor-ы мира идут сюда
 
-        //regions = new TextureRegion[8 * 8];
         Gdx.input.setInputProcessor(world);
-
-        //// texture = new Texture();
-        //for (int y = 0; y < max_y; y++) {
-        //    for (int x = 0; x < max_x; x++) {
-        //        regions[x + y * max_x] = new TextureRegion(world.tileSet.texture,
-        //                x * world.tileSet.size,
-        //                y * world.tileSet.size,
-        //                world.tileSet.size,
-        //                world.tileSet.size);
-        //    }
-        //}
-
-        //Random rand = new Random();
-        //for (int y = 0, i = 0; y < world.worldHeight; y++) {
-        //    for (int x = 0; x < world.worldWidth; x++) {
-        //        Image img = new Image(regions[rand.nextInt(max_x*max_y)]);
-        //        img.setBounds(x, y, 1, 1);
-        //        mapLevel.addActor(img);
-        //        i++;
-        //    }
-        //}
-        //Image img = new Image(regions[0]);
-        //img.setBounds(0,0,1,1);
-        //mapLevel.addActor(img);
 
         //MapTile mt = new MapTile(tileSet, world, 0, 1,0,false);
 
@@ -93,10 +63,7 @@ public class GameScreen implements Screen, InputProcessor {
                 (int)world.getCamera().position.y));
         debug_tool4.set_text(String.format("Selected id: (%d)",
                 id_of_place_tile));
-        world.texts.add(debug_tool, debug_tool2,debug_tool3, debug_tool4);
-        //topLevel.addActor(debug_tool);
-        //topLevel.addActor(debug_tool2);
-        //topLevel.addActor(debug_tool3);
+        world.getTexts().add(debug_tool, debug_tool2,debug_tool3, debug_tool4);
 
         // interface_objects.add(debug_tool, debug_tool2, debug_tool3);
 
@@ -139,7 +106,7 @@ public class GameScreen implements Screen, InputProcessor {
         //camera.update(); // Обновление камеры
 
         game.getBatch().begin();
-        for (GameObject current_text : world.texts) {
+        for (GameObject current_text : world.getTexts()) {
             current_text.draw(game.getBatch(), 1);
         }
 
@@ -193,29 +160,23 @@ public class GameScreen implements Screen, InputProcessor {
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d, %d)",
                         (int) touchPos.x,
                         (int) touchPos.y,
-                        world.current_z)
+                        world.getCurrent_z())
                 );
-
                 world.getCamera().unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
-
-                //// Собственно создание объекта
                 int actual_x = (int) touchPos.x;
                 int actual_y = (int) touchPos.y;
 
                 // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
 
-                //int grid_x = (actual_x/tileSet.size * tileSet.size );
-                //int grid_y = (actual_y/tileSet.size * tileSet.size );
-
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("World coords: (%d, %d, %d)", actual_x, actual_y, world.current_z));
+                debug_tool.set_text(String.format("World coords: (%d, %d, %d)", actual_x, actual_y, world.getCurrent_z()));
 
                 if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
                     // Если зажат SHIFT, то пробуем удалить тайл
-                    world.remove_object(actual_x, actual_y, world.current_z);
+                    world.remove_object(actual_x, actual_y, world.getCurrent_z());
                 } else {
                     // Иначе доавбляем его
-                    MapTile new_go = new MapTile(world, 0, id_of_place_tile, actual_x, actual_y, world.current_z, true);
+                    MapTile new_go = new MapTile(world, 0, id_of_place_tile, actual_x, actual_y, world.getCurrent_z(), true);
                     new_go.is_passable = false;
 
                     world.add_object(new_go);
@@ -236,27 +197,27 @@ public class GameScreen implements Screen, InputProcessor {
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             world.getCamera().translate(-1, 0, 0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             world.getCamera().translate(1, 0, 0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             world.getCamera().translate(0, 1, 0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             world.getCamera().translate(0, -1, 0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
-            world.current_z--;
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            world.setCurrent_z(world.getCurrent_z() - 1);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
-            world.current_z++;
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
+            world.setCurrent_z(world.getCurrent_z() + 1);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.getCurrent_z()));
         }
         //if (Gdx.input.isKeyPressed(Input.Keys.P)){
         //    world.getViewport().update(
