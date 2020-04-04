@@ -137,6 +137,7 @@ public class Player extends GameObject {
             velocity.x = 0;
             this.setColor(0,255,0,1);
         }
+
         // зашли снизу
         if(this.getY() + this.getHeight() > gameObject.getY()){
             if(velocity.y != 0)
@@ -214,7 +215,7 @@ public class Player extends GameObject {
         this.setColor(255,255,255,1);
         // попробуем подвинуть
         updatePosition(delta);
-        GameObject obj = parent_world.collisionDetector.checkCollision(this);
+        GameObject obj = parent_world.collisionDetector.checkCollisions(this);
         if( obj != null ){
             onCollision(obj);
         }
