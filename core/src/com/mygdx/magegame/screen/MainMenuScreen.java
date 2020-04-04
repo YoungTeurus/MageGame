@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.magegame.MageGame;
 import com.mygdx.magegame.screen.GameScreen;
@@ -18,6 +19,7 @@ public class MainMenuScreen implements Screen{
 
     private Label gameName;
     private TextButton buttonStart;
+    private TextButton buttonEditor;
     private TextButton buttonExit;
 
     OrthographicCamera camera;
@@ -25,7 +27,7 @@ public class MainMenuScreen implements Screen{
     public MainMenuScreen(final MageGame game)
     {
         this.game = game;
-        gui = new Stage(new ScreenViewport(), game.getBatch());
+        gui = new Stage(new FitViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight()), game.getBatch());
 
         Gdx.input.setInputProcessor(gui);
 
@@ -37,13 +39,24 @@ public class MainMenuScreen implements Screen{
         buttonStart.setPosition(Gdx.graphics.getWidth()/2-buttonStart.getWidth()/2, Gdx.graphics.getHeight()-200);
         gui.addActor(buttonStart);
 
+        buttonEditor = new TextButton("Editor", game.getSkin());
+        buttonEditor.setPosition(Gdx.graphics.getWidth()/2-buttonEditor.getWidth()/2, Gdx.graphics.getHeight()-300);
+        gui.addActor(buttonEditor);
+
         buttonExit = new TextButton("Exit", game.getSkin());
-        buttonExit.setPosition(Gdx.graphics.getWidth()/2-buttonExit.getWidth()/2, Gdx.graphics.getHeight()-300);
+        buttonExit.setPosition(Gdx.graphics.getWidth()/2-buttonExit.getWidth()/2, Gdx.graphics.getHeight()-400);
         gui.addActor(buttonExit);
 
         buttonStart.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y){
                 game.setScreen(new GameScreen(game));
+                dispose();
+            }
+        });
+
+        buttonEditor.addListener(new ClickListener(){
+            public void clicked(InputEvent event, float x, float y){
+                game.setScreen(new EditorScreen(game));
                 dispose();
             }
         });
@@ -78,7 +91,9 @@ public class MainMenuScreen implements Screen{
 
     @Override
     public void resize(int width, int height) {
-
+        gui.getCamera().viewportWidth = width;
+        gui.getCamera().viewportHeight = height;
+        gui.getViewport().update(width, height, false);
     }
 
     @Override

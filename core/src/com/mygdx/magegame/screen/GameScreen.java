@@ -217,6 +217,7 @@ public class GameScreen implements Screen, InputProcessor {
                 else{
                     // Иначе доавбляем его
                     MapTile new_go = new MapTile(world,0,id_of_place_tile,actual_x, actual_y,world.current_z, true);
+                    new_go.is_passable = false;
                     world.add_object(new_go);
                     was_tile_set = true;
                 }
