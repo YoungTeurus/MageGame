@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.magegame.TileSet;
+import com.mygdx.magegame.collision.CollisionDetector;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
@@ -27,6 +28,8 @@ import static com.mygdx.magegame.Consts.*;
 public class World extends Stage {
     public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
 
+    CollisionDetector collisionDetector;
+    //World worldBody;
     // наш игрок
     public Player player;
     public int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
@@ -58,12 +61,14 @@ public class World extends Stage {
             tileSets[tileset_id] = new TileSet(Gdx.files.internal(tilesets_filenames[tileset_id]), tilesets_sizes[tileset_id]);
         }
 
+        collisionDetector = new CollisionDetector(this);
         font = new BitmapFont();
         texts = new Array<>();
         map = new TiledLayer(this);
         addActor(map);
 
         createWorld();
+
     }
 
     public void add_object(GameObject added_object){
@@ -88,9 +93,16 @@ public class World extends Stage {
         }
         if (!is_blocked){
             Gdx.app.log("Children", "placed" + added_object.toString());
+            if(added_object instanceof MapTile){
+                // если не проходимый добавим его к обрабатываемым объектам
+                if(((MapTile) added_object).is_passable == false)
+                    collisionDetector.allStaticObjects.add(added_object);
+            }
+            else if(added_object instanceof Player){
+                collisionDetector.allControlledObjects.add(added_object);
+            }
 
             map.get_layer((int)added_object.position.z).addActor(added_object);
-
             //addActor(added_object);
         }
     }
@@ -110,10 +122,21 @@ public class World extends Stage {
     private void createWorld(){
         current_z = 0;
         player = new Player(this, 0,0,0, 0);
+        collisionDetector.allControlledObjects.add(player);
     }
 
     public Player getPlayer() {
         return player;
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if(!(collisionDetector.allControlledObjects.isEmpty()))
+            for (int i = 0; i < collisionDetector.allControlledObjects.size; i++) {
+                if(collisionDetector.checkCollision(collisionDetector.allControlledObjects.get(i)))
+                    Gdx.app.log("WORLD", "Collision detected");
+        }
     }
 
     @Override
@@ -131,7 +154,7 @@ public class World extends Stage {
         updateMouseCoords(screenX, screenY);
         // пока что всегда передаем правый клик игроку
         if(button == Input.Buttons.RIGHT) {
-            Gdx.app.log("Mouse", "PRESSED");
+            //Gdx.app.log("Mouse", "PRESSED");
             player.handleMouseInput(mouseCoords2);
             mouseRightButtonPressed = true;
         }
@@ -176,7 +199,7 @@ public class World extends Stage {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         super.touchUp(screenX, screenY, pointer, button);
         if(button == Input.Buttons.RIGHT)
-            Gdx.app.log("Mouse", "RELEASED");
+            //Gdx.app.log("Mouse", "RELEASED");
             mouseRightButtonPressed = false;
         return true;
     }
@@ -294,6 +317,7 @@ public class World extends Stage {
                                 Integer.parseInt(other_params[1]),
                                 (int)for_coords[0],(int)for_coords[1],(int)for_coords[2],
                                 true);
+                        new_object.is_passable = false;
                         add_object(new_object);
                     }
 
@@ -303,5 +327,7 @@ public class World extends Stage {
         } catch (IOException e){
             e.printStackTrace();
         }
+        Gdx.app.log("WORLD", "Walls added " + collisionDetector.allStaticObjects.size);
+        Gdx.app.log("WORLD", "Colladed added " + collisionDetector.allControlledObjects.size);
     }
 }

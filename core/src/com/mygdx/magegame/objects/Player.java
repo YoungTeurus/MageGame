@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.mygdx.magegame.TileSet;
+import com.mygdx.magegame.collision.CollisionEvent;
+import com.mygdx.magegame.collision.CollisionListener;
 import com.mygdx.magegame.world.World;
 
 import java.util.HashMap;
@@ -73,6 +75,13 @@ public class Player extends GameObject {
         setRotation(270);
         setOrigin(SIZE/2, SIZE/2);
         setBounds(position.x, position.y, SIZE, SIZE);
+        addListener(new CollisionListener(){
+                        @Override
+                        public void processCollision(GameObject gameObject, CollisionEvent.CollisionObjectType type) {
+                            onCollision(gameObject);
+                        }
+                    }
+        );
         addListener(
                 new InputListener(){
                     @Override
@@ -102,6 +111,11 @@ public class Player extends GameObject {
         initDirection();
     }
 
+    @Override
+    public void onCollision(GameObject gameObject) {
+        Gdx.app.log("PLAYER", "COLLISION PROCESSED");
+    }
+
     private void handleInput(int keycode) {
         if ( keycode == Input.Keys.S )
             StopPressed();
@@ -112,7 +126,7 @@ public class Player extends GameObject {
     }
 
     public void handleMouseInput(Vector2 mouseCoords){
-        Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
+        //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
         endPoint.x = mouseCoords.x;
         endPoint.y = mouseCoords.y;
         mouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
@@ -123,7 +137,6 @@ public class Player extends GameObject {
         velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
         velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
         updateAngleDirection();
-        Gdx.app.log("Velos", velocity.toString());
     }
 
     public void resetVelocity(){

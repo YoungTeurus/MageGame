@@ -25,6 +25,9 @@ public abstract class GameObject extends Actor {
         position.set(x, y, z);
     }
 
+    public void onCollision(GameObject gameObject){
+
+    }
 
     @Override
     public String toString() {

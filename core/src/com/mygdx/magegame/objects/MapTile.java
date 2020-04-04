@@ -8,7 +8,7 @@ public class MapTile extends GameObject {
     TextureRegion object_texture_region;
     int id;
     int tileset_id;
-    boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
+    public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
     boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
     String human_name; // "Человеческое название" тайла, заданное заранее
 
