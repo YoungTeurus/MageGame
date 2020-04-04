@@ -28,7 +28,7 @@ import static com.mygdx.magegame.Consts.*;
 public class World extends Stage {
     public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
 
-    CollisionDetector collisionDetector;
+    public CollisionDetector collisionDetector;
     //World worldBody;
     // наш игрок
     public Player player;
@@ -135,11 +135,12 @@ public class World extends Stage {
     @Override
     public void act(float delta) {
         super.act(delta);
-        if(!(collisionDetector.allControlledObjects.isEmpty()))
-            for (int i = 0; i < collisionDetector.allControlledObjects.size; i++) {
-                if(collisionDetector.checkCollision(collisionDetector.allControlledObjects.get(i)))
-                    Gdx.app.log("WORLD", "Collision detected");
-        }
+        // коллизии обходим перед движением игрока
+       //if(!(collisionDetector.allControlledObjects.isEmpty()))
+       //    for (int i = 0; i < collisionDetector.allControlledObjects.size; i++) {
+       //        if(collisionDetector.checkCollision(collisionDetector.allControlledObjects.get(i)));
+                    //Gdx.app.log("WORLD", "Collision detected");
+
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.mygdx.magegame.objects;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.mygdx.magegame.world.World;
@@ -8,6 +9,7 @@ public abstract class GameObject extends Actor {
     public Vector3 position;
     boolean is_camera_oriented;
     World parent_world;
+    public Circle phusBody;
 
     GameObject(World world){
         parent_world = world;

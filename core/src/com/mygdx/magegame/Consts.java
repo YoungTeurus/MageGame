@@ -1,11 +1,11 @@
 package com.mygdx.magegame;
 
 public class Consts {
-    public static final int window_w = 1600; // Размеры стандартного окна
-    public static final int window_h = 1600;
+    public static final int window_w = 800; // Размеры стандартного окна
+    public static final int window_h = 600;
 
-    public static int world_w = 20; // "Приближение" камеры
-    public static int world_h = 20;
+    public static int world_w = 10; // "Приближение" камеры
+    public static int world_h = 10;
 
     public static final int num_of_tilesets = 2; // Количество доступных тайлсетов
     // public static int[] tilesets_sizes = new int[]{ // Размеры спрайтов в соответсвующих тайлсетах

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -30,7 +31,7 @@ public class Player extends GameObject {
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
     public static final float SPEED = 2f;
     // размер конст
-    public static final float SIZE = 1.5f; // В размерах одной клетки (32*32)
+    public static final float SIZE = 1f; // В размерах одной клетки (32*32)
     private static final float EPS = SIZE / 15;
 
     //состояние
@@ -54,6 +55,10 @@ public class Player extends GameObject {
     Vector2 velocity = new Vector2();
     //конечная точка пути
     Vector3 endPoint = new Vector3();
+    // предыдущая точка из которой перешли
+    Vector3 previosPoint = new Vector3();
+
+
 
     // угол, по которому движется
     float angleDirection;
@@ -75,6 +80,7 @@ public class Player extends GameObject {
         setRotation(270);
         setOrigin(SIZE/2, SIZE/2);
         setBounds(position.x, position.y, SIZE, SIZE);
+        phusBody = new Circle(position.x+SIZE/2, position.y+SIZE/2, SIZE);
         addListener(new CollisionListener(){
                         @Override
                         public void processCollision(GameObject gameObject, CollisionEvent.CollisionObjectType type) {
@@ -113,7 +119,42 @@ public class Player extends GameObject {
 
     @Override
     public void onCollision(GameObject gameObject) {
-        Gdx.app.log("PLAYER", "COLLISION PROCESSED");
+        // обработка сстолкновения со статическим объектом или игроком
+        Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
+        // зашли слева
+        if(this.getX() + this.getWidth() > gameObject.getX()){
+            if(velocity.x != 0)
+                this.position.x = previosPoint.x;
+                //this.position.x = gameObject.getX() - this.getWidth() - 0.1f;
+            velocity.x = 0;
+            this.setColor(0,255,0,1);
+        }
+        // зашли справа
+        else if(this.getX() < gameObject.getX() + gameObject.getWidth()){
+            if(velocity.x != 0)
+                this.position.x = previosPoint.x;
+                //this.position.x = gameObject.getX()+ gameObject.getWidth() + 0.1f;
+            velocity.x = 0;
+            this.setColor(0,255,0,1);
+        }
+        // зашли снизу
+        if(this.getY() + this.getHeight() > gameObject.getY()){
+            if(velocity.y != 0)
+                this.position.y = previosPoint.y;
+                //this.position.y = gameObject.getY() - this.getHeight()  - 0.1f;
+            this.setColor(255,0,0,1);
+            velocity.y = 0;
+        }
+        // зашли сверху
+        else if(this.getY() < gameObject.getY() + gameObject.getHeight()){
+            if(velocity.y != 0)
+                this.position.y = previosPoint.y;
+                //this.position.y = gameObject.getY()+gameObject.getHeight() + 0.1f;
+            this.setColor(255,0,0,1);
+            velocity.y = 0;
+        }
+        this.setPosition(position.x, position.y);
+        Gdx.app.log("PLAYER", "NEW POS " + position.toString());
     }
 
     private void handleInput(int keycode) {
@@ -150,39 +191,8 @@ public class Player extends GameObject {
             state = State.STOPED;
         }
     }
-    /*private void processInput() {
-        if (direction.get(Keys.LEFT))
-            getVelocity().x = -SPEED;
-        if (direction.get(Keys.RIGHT))
-            getVelocity().x = SPEED;
-        if (direction.get(Keys.UP))
-            getVelocity().y = SPEED;
-        if (direction.get(Keys.DOWN))
-            getVelocity().y = -SPEED;
-        if ((direction.get(Keys.LEFT) && direction.get(Keys.RIGHT)) ||
-                (!direction.get(Keys.LEFT) && (!direction.get(Keys.RIGHT))))
-            getVelocity().x = 0;
-        if ((direction.get(Keys.UP) && direction.get(Keys.DOWN)) ||
-                (!direction.get(Keys.UP) && (!direction.get(Keys.DOWN))))
-            getVelocity().y = 0;
-        updateAngleDirection();
-    }*/
 
     private void updateAngleDirection() { angleDirection = getVelocity().angle(); }
-
-
-    public Vector2 getVelocity() { return velocity; }
-
-    public void set_texture(){
-
-        int srcX = type*parent_tileSet.size;
-        int srcY = 0;
-
-        object_texture_region = new TextureRegion(parent_tileSet.texture,
-                srcX, srcY, parent_tileSet.size, parent_tileSet.size);
-        setBounds(position.x, position.y,
-                2, 2);
-    }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
@@ -191,6 +201,7 @@ public class Player extends GameObject {
         {
             setRotation(angleDirection);
         }
+        batch.setColor(this.getColor());
         //Gdx.app.log("PLAYER", "Rotation "+ getRotation());
         Texture t = object_texture_region.getTexture();
         batch.draw(object_texture_region, getX(), getY(),
@@ -201,7 +212,18 @@ public class Player extends GameObject {
     @Override
     public void act(float delta) {
         super.act(delta);
+        this.setColor(255,255,255,1);
+        // попробуем подвинуть
         updatePosition(delta);
+        GameObject obj = parent_world.collisionDetector.checkCollision(this);
+        if( obj != null ){
+            onCollision(obj);
+        }
+         // здесь проверка
+        /* if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
+                state = State.NONE;
+                resetVelocity();
+            }*/
     }
 
     public Actor hit(float x, float y, boolean touchable) {
@@ -213,8 +235,10 @@ public class Player extends GameObject {
         if(state == State.WALKING)
         {
             //Gdx.app.log("PLAYER",  position.toString()+" "+endPoint.toString() + " " + velocity.toString());
+            this.setPreviosPoint(position);
             this.position.add(velocity.x*delta, velocity.y*delta, 0);
             this.setPosition(position.x, position.y);
+
             if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
                 state = State.NONE;
                 resetVelocity();
@@ -231,7 +255,28 @@ public class Player extends GameObject {
         direction.get(direction.put(Keys.STOP, false));
     }
 
+    public Vector2 getVelocity() { return velocity; }
+
+    public void set_texture(){
+
+        int srcX = type*parent_tileSet.size;
+        int srcY = 0;
+
+        object_texture_region = new TextureRegion(parent_tileSet.texture,
+                srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+        setBounds(position.x, position.y,
+                2, 2);
+    }
+
     public State getState() {
         return state;
+    }
+
+    public Vector3 getPreviosPoint() {
+        return previosPoint;
+    }
+
+    public void setPreviosPoint(Vector3 previosPoint) {
+        this.previosPoint = previosPoint;
     }
 }
