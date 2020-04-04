@@ -33,7 +33,7 @@ public class CollisionDetector {
     }
 
     // проверяет не столкнулся ли наш обьект с чем-нибудь
-    public GameObject checkCollision(GameObject gameObject)
+    public GameObject checkCollisions(GameObject gameObject)
     {
         for (GameObject obj: allStaticObjects) {
             // обновили прямоугольнички относительно наших 2-х объектов
@@ -51,11 +51,24 @@ public class CollisionDetector {
             }
         }
 
+
+
         for (GameObject obj: allControlledObjects) {
             ;
         }
         return null;
     }
+
+    public boolean checkCollisionRects(GameObject obj1, GameObject obj2){
+        updateRects(obj1, obj2);
+        return (Intersector.overlaps(rect1, rect2));
+    }
+
+    public boolean checkCollisionCircleRect(GameObject obj1, GameObject obj2){
+        updateRects(obj1, obj2);
+        return (Intersector.overlaps(circle, rect2));
+    }
+
 
     private void updateRects(GameObject gameObject, GameObject obj) {
         circle.radius = gameObject.getHeight()/2;
