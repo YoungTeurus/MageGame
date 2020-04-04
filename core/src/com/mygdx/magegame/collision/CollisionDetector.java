@@ -47,7 +47,7 @@ public class CollisionDetector {
                //event.setObjectType(CollisionEvent.CollisionObjectType.STATIC);
                //gameObject.fire(event);
                 Gdx.app.log("COLLISION", rect1.toString() + rect2.toString());
-                return gameObject;
+                return obj;
             }
         }
 

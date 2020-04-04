@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -124,32 +125,32 @@ public class Player extends GameObject {
         // зашли слева
         if(this.getX() + this.getWidth() > gameObject.getX()){
             if(velocity.x != 0)
-                this.position.x = previosPoint.x;
-                //this.position.x = gameObject.getX() - this.getWidth() - 0.1f;
+                //this.position.x = previosPoint.x;
+                this.position.x = gameObject.getX() - this.getWidth() - 0.1f;
             velocity.x = 0;
             this.setColor(0,255,0,1);
         }
         // зашли справа
         else if(this.getX() < gameObject.getX() + gameObject.getWidth()){
             if(velocity.x != 0)
-                this.position.x = previosPoint.x;
-                //this.position.x = gameObject.getX()+ gameObject.getWidth() + 0.1f;
+                //this.position.x = previosPoint.x;
+                this.position.x = gameObject.getX()+ gameObject.getWidth() + 0.1f;
             velocity.x = 0;
             this.setColor(0,255,0,1);
         }
         // зашли снизу
         if(this.getY() + this.getHeight() > gameObject.getY()){
             if(velocity.y != 0)
-                this.position.y = previosPoint.y;
-                //this.position.y = gameObject.getY() - this.getHeight()  - 0.1f;
+                //this.position.y = previosPoint.y;
+                this.position.y = gameObject.getY() - this.getHeight()  - 0.1f;
             this.setColor(255,0,0,1);
             velocity.y = 0;
         }
         // зашли сверху
         else if(this.getY() < gameObject.getY() + gameObject.getHeight()){
             if(velocity.y != 0)
-                this.position.y = previosPoint.y;
-                //this.position.y = gameObject.getY()+gameObject.getHeight() + 0.1f;
+                //this.position.y = previosPoint.y;
+                this.position.y = gameObject.getY()+gameObject.getHeight() + 0.1f;
             this.setColor(255,0,0,1);
             velocity.y = 0;
         }
@@ -203,7 +204,6 @@ public class Player extends GameObject {
         }
         batch.setColor(this.getColor());
         //Gdx.app.log("PLAYER", "Rotation "+ getRotation());
-        Texture t = object_texture_region.getTexture();
         batch.draw(object_texture_region, getX(), getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
                 getScaleX(), getScaleY(), getRotation());
