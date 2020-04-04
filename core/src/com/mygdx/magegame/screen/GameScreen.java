@@ -7,17 +7,14 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.mygdx.magegame.MageGame;
 import com.mygdx.magegame.world.World;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.TextObject;
 
-import static com.mygdx.magegame.Consts.window_h;
-import static com.mygdx.magegame.Consts.window_w;
+import static com.mygdx.magegame.Consts.*;
 
 
 public class GameScreen implements Screen, InputProcessor {
@@ -33,6 +30,7 @@ public class GameScreen implements Screen, InputProcessor {
     TextObject debug_tool;
     TextObject debug_tool2;
     TextObject debug_tool3;
+    TextObject debug_tool4;
     Texture pixmaptex; // Текстура сетки для отрисовки
 
     // Тайл, который будет устанавливаться
@@ -44,7 +42,7 @@ public class GameScreen implements Screen, InputProcessor {
         this.game = game;
 
         // Создание объектов полей
-        world = new World(10,10);
+        world = new World(world_w,world_h);
 
 
         // Создание камеры
@@ -89,10 +87,13 @@ public class GameScreen implements Screen, InputProcessor {
         debug_tool = new TextObject(world,50,100,0,"Text 1",false);
         debug_tool2 = new TextObject(world,50,80,0,"Text 2", false);
         debug_tool3 = new TextObject(world,50, 60,0, "Text 3", false);
+        debug_tool4 = new TextObject(world, 50, 40, 0, "Text 4", false);
         debug_tool3.set_text(String.format("Camera coords: (%d, %d)",
                 (int)world.getCamera().position.x,
                 (int)world.getCamera().position.y));
-        world.texts.add(debug_tool, debug_tool2,debug_tool3);
+        debug_tool4.set_text(String.format("Selected id: (%d)",
+                id_of_place_tile));
+        world.texts.add(debug_tool, debug_tool2,debug_tool3, debug_tool4);
         //topLevel.addActor(debug_tool);
         //topLevel.addActor(debug_tool2);
         //topLevel.addActor(debug_tool3);
@@ -138,7 +139,7 @@ public class GameScreen implements Screen, InputProcessor {
         //camera.update(); // Обновление камеры
 
         game.getBatch().begin();
-        for (GameObject current_text: world.texts){
+        for (GameObject current_text : world.texts) {
             current_text.draw(game.getBatch(), 1);
         }
 
@@ -164,7 +165,6 @@ public class GameScreen implements Screen, InputProcessor {
                         // Красным рисуется всё, что находится в БОЛЬШЕЙ половине (положительной?)
                         pixmap.setColor(1.0f, 0.2f, 0.2f, 0.9f);
                     }
-                    //TODO: Сделать размеры сетки НОРМАЛЬНЫМИ и правильными (вместо "32).
                     pixmap.drawLine(window_w / 2 + x * 32, 0, window_w / 2 + x * 32, window_h);
                 }
                 pixmap.setColor(0.2f, 0.8f, 0.8f, 0.75f);
@@ -175,8 +175,8 @@ public class GameScreen implements Screen, InputProcessor {
             }
             // Отрисовка сетки
             game.getBatch().draw(pixmaptex,
-                    (world.getCamera().position.x%32),
-                    (world.getCamera().position.y%32));
+                    (world.getCamera().position.x % 32),
+                    (world.getCamera().position.y % 32));
         }
         game.getBatch().end();
 
@@ -191,7 +191,7 @@ public class GameScreen implements Screen, InputProcessor {
 
                 // Координаты нажатия в окне
                 debug_tool2.set_text(String.format("Clicked coords: (%d, %d, %d)",
-                        (int)touchPos.x,
+                        (int) touchPos.x,
                         (int) touchPos.y,
                         world.current_z)
                 );
@@ -199,8 +199,8 @@ public class GameScreen implements Screen, InputProcessor {
                 world.getCamera().unproject(touchPos); // Не нужно СЕЙЧАС, но очень пригодится, когда камера будет двигаться
 
                 //// Собственно создание объекта
-                int actual_x = (int) touchPos.x ;
-                int actual_y = (int) touchPos.y ;
+                int actual_x = (int) touchPos.x;
+                int actual_y = (int) touchPos.y;
 
                 // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
 
@@ -208,89 +208,102 @@ public class GameScreen implements Screen, InputProcessor {
                 //int grid_y = (actual_y/tileSet.size * tileSet.size );
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("World coords: (%d, %d, %d)",actual_x,actual_y, world.current_z));
+                debug_tool.set_text(String.format("World coords: (%d, %d, %d)", actual_x, actual_y, world.current_z));
 
                 if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
                     // Если зажат SHIFT, то пробуем удалить тайл
-                    world.remove_object(actual_x,actual_y,world.current_z);
-                }
-                else{
+                    world.remove_object(actual_x, actual_y, world.current_z);
+                } else {
                     // Иначе доавбляем его
-                    MapTile new_go = new MapTile(world,0,id_of_place_tile,actual_x, actual_y,world.current_z, true);
+                    MapTile new_go = new MapTile(world, 0, id_of_place_tile, actual_x, actual_y, world.current_z, true);
                     new_go.is_passable = false;
+
                     world.add_object(new_go);
                     was_tile_set = true;
                 }
             }
-        }
-        else {
+        } else {
             was_tile_set = false;
         }
 //
         // Обработка нажатий на клавиатуру
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
-            //place_tile.set_texture(0);
-            id_of_place_tile = 0;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
-            //place_tile.set_texture(1);
-            id_of_place_tile = 1;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
-            //place_tile.set_texture(2);
-            id_of_place_tile = 2;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
-            //place_tile.set_texture(3);
-            id_of_place_tile = 3;
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.MINUS)){ // По нажатию на минус можно переключить отображение сетки
+        if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS)) { // По нажатию на минус можно переключить отображение сетки
             need_to_draw_grid = !need_to_draw_grid;
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.EQUALS)) { // По нажатию на равно можно переключить отображение других уровеней
+            world.need_to_draw_other_level_rather_than_current = !world.need_to_draw_other_level_rather_than_current;
+        }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            world.getCamera().translate(-1, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            world.getCamera().translate(-1, 0, 0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            world.getCamera().translate(1, 0 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            world.getCamera().translate(1, 0, 0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)){
-            world.getCamera().translate(0, 1 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            world.getCamera().translate(0, 1, 0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-            world.getCamera().translate(0, -1 ,0);
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            world.getCamera().translate(0, -1, 0);
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
             world.current_z--;
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
             world.current_z++;
-            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int)world.getCamera().position.x, (int)world.getCamera().position.y, world.current_z));
+            debug_tool3.set_text(String.format("Camera coords: (%d, %d, %d)", (int) world.getCamera().position.x, (int) world.getCamera().position.y, world.current_z));
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.P)){
-            world.getViewport().update(
-                    world.getViewport().getScreenWidth() + 10,
-                    world.getViewport().getScreenHeight() + 10,
-                    false);
-            Gdx.app.log("Viewport",String.format("current width/height %d, %d",
-                    world.getViewport().getScreenWidth(),
-                    world.getViewport().getScreenHeight())
-            );
+        //if (Gdx.input.isKeyPressed(Input.Keys.P)){
+        //    world.getViewport().update(
+        //            world.getViewport().getScreenWidth() + 10,
+        //            world.getViewport().getScreenHeight() + 10,
+        //            false);
+        //    Gdx.app.log("Viewport",String.format("current width/height %d, %d",
+        //            world.getViewport().getScreenWidth(),
+        //            world.getViewport().getScreenHeight())
+        //    );
+        //}
+        //if (Gdx.input.isKeyPressed(Input.Keys.O)){
+        //    world.getViewport().update(
+        //            world.getViewport().getScreenWidth() - 10,
+        //            world.getViewport().getScreenHeight() - 10,
+        //            false);
+        //    Gdx.app.log("Viewport",String.format("current width/height %d, %d",
+        //            world.getViewport().getScreenWidth(),
+        //            world.getViewport().getScreenHeight())
+        //    );
+        //}
+
+        // Клавиши для установки тайлов
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+            id_of_place_tile = 0;
+            debug_tool4.set_text(String.format("Selected id: (%d)",
+                    id_of_place_tile));
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.O)){
-            world.getViewport().update(
-                    world.getViewport().getScreenWidth() - 10,
-                    world.getViewport().getScreenHeight() - 10,
-                    false);
-            Gdx.app.log("Viewport",String.format("current width/height %d, %d",
-                    world.getViewport().getScreenWidth(),
-                    world.getViewport().getScreenHeight())
-            );
+        if (Gdx.input.isKeyJustPressed(Input.Keys.O)){
+            id_of_place_tile++;
+            debug_tool4.set_text(String.format("Selected id: (%d)",
+                    id_of_place_tile));
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+            id_of_place_tile--;
+            debug_tool4.set_text(String.format("Selected id: (%d)",
+                    id_of_place_tile));
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)){
+            id_of_place_tile += world.tileSets[0].num_of_tiles_in_row;
+            debug_tool4.set_text(String.format("Selected id: (%d)",
+                    id_of_place_tile));
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
+            id_of_place_tile -= world.tileSets[0].num_of_tiles_in_row;
+            debug_tool4.set_text(String.format("Selected id: (%d)",
+                    id_of_place_tile));
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
             world.save("map.txt");

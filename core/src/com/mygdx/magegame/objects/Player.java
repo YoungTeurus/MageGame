@@ -59,7 +59,7 @@ public class Player extends GameObject {
     float angleDirection;
 
     TextureRegion object_texture_region; // То, что рисуется
-    static final TileSet parent_tileSet = new TileSet(Gdx.files.internal("spriteset_mages.png"), 32); // Откуда берутся текстурки
+    static final TileSet parent_tileSet = new TileSet(1); // Откуда берутся текстурки
     // угол, куда смотрит текстура
     float angleTexture;
 

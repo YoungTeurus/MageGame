@@ -8,9 +8,9 @@ public class MapTile extends GameObject {
     TextureRegion object_texture_region;
     int id;
     int tileset_id;
-    public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
-    boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
     String human_name; // "Человеческое название" тайла, заданное заранее
+    public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
+    public boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
 
     public MapTile(World world,int tileset_id, int id, int x, int y, int z, boolean is_camera_oriented){
         // Создаёт квадратный объект из текстуры с размером стороны - size.
@@ -20,18 +20,21 @@ public class MapTile extends GameObject {
         set_pos(x, y, z);
         this.is_camera_oriented = is_camera_oriented;
         set_texture(id);
+        human_name = parent_world.tileSets[tileset_id].human_name_array[id];
+        is_passable = parent_world.tileSets[tileset_id].is_passable_array[id];
+        is_solid = parent_world.tileSets[tileset_id].is_solid_array[id];
     }
 
     public void set_texture(int new_id){
          // Координаты текстурки в тайлсете вычисляются по id
-         // Каждый тайлсет может вмещать до 256 тайлов со следующими id:
-         // 0   1  2 ... 15
-         // 16 17 18 ...
+         // Каждый тайлсет может вмещать до X тайлов со следующими id:
+         // 0                    1                      2                      ...  num_of_tiles_in_row-1
+         // num_of_tiles_in_row  num_of_tiles_in_row+1  num_of_tiles_in_row+2  ...
          // ...
 
          id = new_id;
-         int srcX = id%16 * parent_world.tileSets[tileset_id].size;
-         int srcY = id/16 * parent_world.tileSets[tileset_id].size;
+         int srcX = id%parent_world.tileSets[tileset_id].num_of_tiles_in_row * parent_world.tileSets[tileset_id].size;
+         int srcY = id/parent_world.tileSets[tileset_id].num_of_tiles_in_row * parent_world.tileSets[tileset_id].size;
 
          object_texture_region = new TextureRegion(parent_world.tileSets[tileset_id].texture,
                  srcX, srcY,

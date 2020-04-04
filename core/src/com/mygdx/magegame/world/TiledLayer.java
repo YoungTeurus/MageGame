@@ -1,9 +1,7 @@
 package com.mygdx.magegame.world;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.utils.Array;
 
@@ -60,12 +58,20 @@ public class TiledLayer extends Group {
                 GL20.GL_ONE, GL20.GL_ZERO);
         //super.draw(batch, parentAlpha);
         for(int i = bottom_level; i <= top_level; i++){
-            if (i <= parent_world.current_z) {
+            if (i == parent_world.current_z){ // Текущий current_z уровень
                 get_layer(i).draw(batch, parentAlpha);
                 continue;
             }
-            if (i == parent_world.current_z + 1){ // Следующий слой над текущим
-                parent_world.getBatch().setColor(1,1,1,0.5f);
+            if (i < parent_world.current_z && parent_world.need_to_draw_other_level_rather_than_current) { // Все уровни ниже
+                int diff = parent_world.current_z - i; // Разница между текущим уровнем и более нижнем
+                float color = 1 - diff*0.3 < 0? 0f :(float)(1 - diff*0.3);
+                parent_world.getBatch().setColor(color*0.85f,color*0.85f,color,1f);
+                get_layer(i).draw(batch, parentAlpha);
+                parent_world.getBatch().setColor(1,1,1,1);
+                continue;
+            }
+            if (i == parent_world.current_z + 1 && parent_world.need_to_draw_other_level_rather_than_current){ // Следующий слой над текущим
+                parent_world.getBatch().setColor(1f,1f,0.85f,0.7f);
                 get_layer(i).draw(batch, parentAlpha);
                 parent_world.getBatch().setColor(1,1,1,1);
             }
