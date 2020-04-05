@@ -11,9 +11,12 @@ import com.mygdx.magegame.world.World;
 public class CollisionDetector {
     // ссылка на мир
     World world;
-    // все недвигающиеся объекты (иниц при загрузке карты) стены, ловушки и всякие такие штуки
+    // карты коллизий для каждого слоя
     public Array<CollisionMap> collisionMaps;
     CollisionEvent event = new CollisionEvent();
+
+    // обьект вступившие в контакт с проверяемым обьектом
+    Array <GameObject> contactedObjects = new Array<GameObject>();
 
     Rectangle rect1 = new Rectangle();
     Rectangle rect2 = new Rectangle();
@@ -24,9 +27,14 @@ public class CollisionDetector {
         collisionMaps = new Array<CollisionMap>();
     }
 
-    // проверяет не столкнулся ли наш обьект с чем-нибудь
-    public GameObject checkCollisions(GameObject gameObject)
+    /**
+     * @param : gameObject - это игрок или динамический объект, который проверяем на коллизии с другими игроками и
+     * статическими обектами
+     * @return возвращает массив обьектов, с которыми столкнулись
+     * */
+    public Array <GameObject> checkCollisions(GameObject gameObject)
     {
+        contactedObjects.clear();
         CollisionMap currentCollisionMap = this.getLayer(gameObject.getLayer());
         for (GameObject obj: currentCollisionMap.getAllStaticObjects()) {
             // обновили прямоугольнички относительно наших 2-х объектов
@@ -40,10 +48,10 @@ public class CollisionDetector {
                //event.setObjectType(CollisionEvent.CollisionObjectType.STATIC);
                //gameObject.fire(event);
                 Gdx.app.log("COLLISION", rect1.toString() + rect2.toString());
-                return obj;
+                contactedObjects.add(obj);
             }
         }
-        return null;
+        return contactedObjects;
     }
 
     public boolean checkCollisionRects(GameObject obj1, GameObject obj2){
