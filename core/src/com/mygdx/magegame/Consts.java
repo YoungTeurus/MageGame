@@ -16,5 +16,9 @@ public class Consts {
     };
     // public static final int num_of_settings_in_spriteset_files = 10; // Максимальное количество параметров в строке файла тайлсета
     public static final boolean DEBUG = false;
+
+    // Стандартные значения для тайлов, которые не описаны в соответсвующих .txt
+    public static final boolean default_is_passable = false;
+    public static final boolean default_is_solid = true;
 }
 

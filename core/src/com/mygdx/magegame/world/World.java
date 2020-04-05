@@ -27,6 +27,7 @@ import static com.mygdx.magegame.Consts.*;
 
 public class World extends Stage {
     public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
+    public int id_of_current_tileSet = 0; // Текущий тайлсет, выбранный для строительства мира
 
     public CollisionDetector collisionDetector;
     // наш игрок

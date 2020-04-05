@@ -224,7 +224,6 @@ public class Player extends GameObject {
                 collisionVector.y = getY() + getHeight()/2 - gameObject.getY() - gameObject.getHeight()/2;
                 //Gdx.app.log("PLAYER", "COLLISION ANGLE" + collisionVector.angle());
                 collisionAngle = collisionVector.angle(); // угол с которого пересечен обьект (0 справа)
-                // зашли сверху
                 handleCollisionAngle(gameObject);
                 this.setPosition(position.x, position.y);
                 //Gdx.app.log("PLAYER", "NEW POS " + position.toString());

@@ -31,6 +31,7 @@ public class GameScreen implements Screen, InputProcessor {
     TextObject debug_tool2;
     TextObject debug_tool3;
     TextObject debug_tool4;
+    TextObject debug_tool5;
     Texture pixmaptex; // Текстура сетки для отрисовки
 
     // Тайл, который будет устанавливаться
@@ -57,13 +58,14 @@ public class GameScreen implements Screen, InputProcessor {
         debug_tool = new TextObject(world,50,100,0,"Text 1",false);
         debug_tool2 = new TextObject(world,50,80,0,"Text 2", false);
         debug_tool3 = new TextObject(world,50, 60,0, "Text 3", false);
-        debug_tool4 = new TextObject(world, 50, 40, 0, "Text 4", false);
+        debug_tool4 = new TextObject(world, 50, 40, 0, "Text 4", false); // ID устанавливаемого тайла
+        debug_tool5= new TextObject(world, 50, 20, 0, "Text 5", false); // Название устанавливаемого тайла
         debug_tool3.set_text(String.format("Camera coords: (%d, %d)",
                 (int)world.getCamera().position.x,
                 (int)world.getCamera().position.y));
-        debug_tool4.set_text(String.format("Selected id: (%d)",
-                id_of_place_tile));
+        updateTextsForPlaceTile();
         world.getTexts().add(debug_tool, debug_tool2,debug_tool3, debug_tool4);
+        world.getTexts().add(debug_tool5);
 
         // interface_objects.add(debug_tool, debug_tool2, debug_tool3);
 
@@ -169,7 +171,7 @@ public class GameScreen implements Screen, InputProcessor {
                 // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("Player coords: (%d, %d, %d)", (int)world.getPlayer().position.x,
+                debug_tool.set_text(String.format("World coords: (%d, %d, %d)", (int)world.getPlayer().position.x,
                         (int)world.getPlayer().position.y, (int)world.getPlayer().position.z));
 
                 if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
@@ -244,28 +246,23 @@ public class GameScreen implements Screen, InputProcessor {
         // Клавиши для установки тайлов
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
             id_of_place_tile = 0;
-            debug_tool4.set_text(String.format("Selected id: (%d)",
-                    id_of_place_tile));
+            updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.O)){
-            id_of_place_tile++;
-            debug_tool4.set_text(String.format("Selected id: (%d)",
-                    id_of_place_tile));
+            changeIdOfPlaceTile(1);
+            updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
-            id_of_place_tile--;
-            debug_tool4.set_text(String.format("Selected id: (%d)",
-                    id_of_place_tile));
+            changeIdOfPlaceTile(-1);
+            updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)){
-            id_of_place_tile += world.tileSets[0].num_of_tiles_in_row;
-            debug_tool4.set_text(String.format("Selected id: (%d)",
-                    id_of_place_tile));
+            changeIdOfPlaceTile(world.tileSets[0].num_of_tiles_in_row);
+            updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
-            id_of_place_tile -= world.tileSets[0].num_of_tiles_in_row;
-            debug_tool4.set_text(String.format("Selected id: (%d)",
-                    id_of_place_tile));
+            changeIdOfPlaceTile(-1 * world.tileSets[0].num_of_tiles_in_row);
+            updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
             world.save("map.txt");
@@ -273,6 +270,22 @@ public class GameScreen implements Screen, InputProcessor {
         if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
             world.load("map.txt");
         }
+    }
+
+    private void changeIdOfPlaceTile(int difference){
+        id_of_place_tile = (id_of_place_tile+difference)%(world.tileSets[world.id_of_current_tileSet].num_of_tiles_in_row * world.tileSets[world.id_of_current_tileSet].num_of_tiles_in_row);
+        if (id_of_place_tile < 0)
+            id_of_place_tile += world.tileSets[world.id_of_current_tileSet].num_of_tiles_in_row * world.tileSets[world.id_of_current_tileSet].num_of_tiles_in_row;
+    }
+
+    private void updateTextsForPlaceTile(){
+        // Просто замена двух последующих строчек
+        debug_tool4.set_text(String.format("Selected id: (%d)",
+                id_of_place_tile));
+        debug_tool5.set_text(String.format("Selected tile: (%s), is_passable: (%b), is_solid: (%b)",
+                world.tileSets[world.id_of_current_tileSet].getHumanNameById(id_of_place_tile),
+                world.tileSets[world.id_of_current_tileSet].getIsPassableById(id_of_place_tile),
+                world.tileSets[world.id_of_current_tileSet].getIsSolidById(id_of_place_tile)));
     }
 
     @Override

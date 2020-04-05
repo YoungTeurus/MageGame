@@ -50,9 +50,9 @@ public class MapTile extends GameObject {
         set_pos(x, y, z);
         this.is_camera_oriented = is_camera_oriented;
         set_texture(id);
-        human_name = parent_world.tileSets[tileset_id].human_name_array[id];
-        is_passable = parent_world.tileSets[tileset_id].is_passable_array[id];
-        is_solid = parent_world.tileSets[tileset_id].is_solid_array[id];
+        human_name = parent_world.tileSets[tileset_id].getHumanNameById(id);
+        is_passable = parent_world.tileSets[tileset_id].getIsPassableById(id);
+        is_solid = parent_world.tileSets[tileset_id].getIsSolidById(id);
     }
 
     public void set_texture(int new_id){

@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mygdx.magegame.Consts.tilesets_filenames;
+import static com.mygdx.magegame.Consts.*;
 
 public class TileSet {
     public Texture texture;
@@ -19,9 +19,9 @@ public class TileSet {
     public int num_of_tiles_in_row;
 
     // Массив, которые содержат значения соответствующих полей объектов
-    public String[] human_name_array;
-    public boolean[] is_passable_array;
-    public boolean[] is_solid_array;
+    String[] human_name_array;
+    public Boolean[] is_passable_array;
+    public Boolean[] is_solid_array;
 
     public TileSet(int tileset_id){
         // tileset_id смотрится в Consts
@@ -43,8 +43,8 @@ public class TileSet {
 
             num_of_tiles_in_row = size_of_tileset/size;
             human_name_array = new String[num_of_tiles_in_row*num_of_tiles_in_row];
-            is_passable_array = new boolean[num_of_tiles_in_row*num_of_tiles_in_row];
-            is_solid_array = new boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+            is_passable_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+            is_solid_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
 
             // Дальше должны идти строки в виде:
             // id_тайла human_name значение_is_passable значение_is_solid
@@ -92,5 +92,24 @@ public class TileSet {
 
     public void dispose(){
         texture.dispose();
+    }
+
+    public String getHumanNameById(int id){
+        if (human_name_array[id] != null){
+            return human_name_array[id];
+        }
+        return String.format("tile_id_%d",id);
+    }
+
+    public boolean getIsPassableById(int id){
+        if (is_passable_array[id] != null)
+            return is_passable_array[id];
+        return default_is_passable;
+    }
+
+    public boolean getIsSolidById(int id){
+        if (is_solid_array[id] != null)
+            return is_solid_array[id];
+        return default_is_solid;
     }
 }
