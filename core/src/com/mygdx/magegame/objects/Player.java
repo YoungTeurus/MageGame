@@ -118,69 +118,10 @@ public class Player extends GameObject {
         initDirection();
     }
 
-    @Override
-    public void onCollision(GameObject gameObject) {
-
-        //Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
-        // находим вектор из центра обьекта, с кот столкнулись до центра обьекта который столкнулся
-
-        // обработка сстолкновения со статическим тайлом
-        if(gameObject instanceof MapTile)
-        {
-            // если тайл непроходимый
-            if(((MapTile) gameObject).is_passable == false)
-            {
-                collisionVector.x = getX() + getWidth()/2 - gameObject.getX() - gameObject.getWidth()/2;
-                collisionVector.y = getY() + getHeight()/2 - gameObject.getY() - gameObject.getHeight()/2;
-                //Gdx.app.log("PLAYER", "COLLISION ANGLE" + collisionVector.angle());
-                collisionAngle = collisionVector.angle(); // угол с которого пересечен обьект (0 справа)
-                // зашли сверху
-                if(collisionAngle > 45 && collisionAngle <= 135){
-                    if(velocity.y != 0)
-                        this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
-                    this.setColor(255,0,0,1);
-                    velocity.y = 0;
-                }
-                // зашли слева
-                else if(collisionAngle > 135 && collisionAngle <= 225){
-                    if(velocity.x != 0)
-                        this.position.x = gameObject.getX() - this.getWidth() - EPS;
-                    this.setColor(255,0,0,1);
-                    velocity.x = 0;
-                }
-                // зашли снизу
-                else if(collisionAngle > 225 && collisionAngle <= 315){
-                    if(velocity.y != 0)
-                        this.position.y = gameObject.getY() - this.getHeight() - EPS;
-                    this.setColor(255,0,0,1);
-                    velocity.y = 0;
-                }
-                // зашли справа
-                else if(collisionAngle > 315 || collisionAngle <= 45){
-                    if(velocity.x != 0)
-                        this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
-                    this.setColor(255,0,0,1);
-                    velocity.x = 0;
-                }
-                this.setPosition(position.x, position.y);
-                //Gdx.app.log("PLAYER", "NEW POS " + position.toString());
-            }
-            if(((MapTile) gameObject).getId() == 96)
-            {
-                Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
-                ((MapTile) gameObject).active(this, MapTile.Functions.RAISEPLAYER.getFunc());
-                Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
-            }
-        }
-
-    }
-
     private void handleInput(int keycode) {
         if ( keycode == Input.Keys.S )
             StopPressed();
     }
-
-
 
     public void handleMouseInput(Vector2 mouseCoords){
         //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
@@ -238,9 +179,11 @@ public class Player extends GameObject {
         }
         //getX()+getHeight()/4;
 
+        // обрабатываем падение
         Group temp = parent_world.getMap().get_layer(this.getLayer()-1);
         Actor t;
-        if((t = temp.hit(getX()+getWidth(), getY()+ getHeight(), false))!= null){
+        if((t = temp.hit(getX()+getWidth()/2, getY()+ getHeight()/2, false))!= null){
+            //Gdx.app.log("PLAYER", " ACTOR HIT" + ((MapTile) t).getLayer());
             if(t instanceof MapTile) {
                 if (((MapTile) t).is_solid == false || ((MapTile) t).getLayer() != this.getLayer()-1) {
                     this.position.z -= 1;
@@ -261,8 +204,73 @@ public class Player extends GameObject {
         /* if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
                 state = State.NONE;
                 resetVelocity();*/
+    }
+
+
+    @Override
+    public void onCollision(GameObject gameObject) {
+
+        //Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
+        // находим вектор из центра обьекта, с кот столкнулись до центра обьекта который столкнулся
+
+        // обработка сстолкновения со статическим тайлом
+        if(gameObject instanceof MapTile)
+        {
+            // если тайл непроходимый
+            if(((MapTile) gameObject).is_passable == false)
+            {
+                collisionVector.x = getX() + getWidth()/2 - gameObject.getX() - gameObject.getWidth()/2;
+                collisionVector.y = getY() + getHeight()/2 - gameObject.getY() - gameObject.getHeight()/2;
+                //Gdx.app.log("PLAYER", "COLLISION ANGLE" + collisionVector.angle());
+                collisionAngle = collisionVector.angle(); // угол с которого пересечен обьект (0 справа)
+                // зашли сверху
+                if(collisionAngle > 45 && collisionAngle <= 135){
+                    if(velocity.y != 0)
+                        this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.y = 0;
+                }
+                // зашли слева
+                else if(collisionAngle > 135 && collisionAngle <= 225){
+                    if(velocity.x != 0)
+                        this.position.x = gameObject.getX() - this.getWidth() - EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.x = 0;
+                }
+                // зашли снизу
+                else if(collisionAngle > 225 && collisionAngle <= 315){
+                    if(velocity.y != 0)
+                        this.position.y = gameObject.getY() - this.getHeight() - EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.y = 0;
+                }
+                // зашли справа
+                else if(collisionAngle > 315 || collisionAngle <= 45){
+                    if(velocity.x != 0)
+                        this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.x = 0;
+                }
+                this.setPosition(position.x, position.y);
+                //Gdx.app.log("PLAYER", "NEW POS " + position.toString());
+            }
+            // если этот тайл лестница
+            if(((MapTile) gameObject).getId() == 96)
+            {
+                collisionVector.x = gameObject.getX() + gameObject.getWidth()/2;
+                collisionVector.y = gameObject.getY() + gameObject.getHeight()/2;
+                // если наш центр пересек границу лестницы, тогда поднимемся на нее
+                Gdx.app.log("PLAYER", collisionVector.toString());
+                if(collisionVector.dst(getX()+getWidth()/2, getY()+getHeight()/2) <= SIZE/2){
+                    Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
+                    ((MapTile) gameObject).active(this, MapTile.Functions.RAISEPLAYER.getFunc());
+                    Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
+                }
+            }
+        }
 
     }
+
 
     public Actor hit(float x, float y, boolean touchable) {
         //Процедура проверки. Если точка в прямоугольнике актёра, возвращаем актёра.
