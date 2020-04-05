@@ -29,7 +29,6 @@ public class World extends Stage {
     public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
 
     public CollisionDetector collisionDetector;
-    //World worldBody;
     // наш игрок
     Player player;
     int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
@@ -98,15 +97,6 @@ public class World extends Stage {
         if (!is_blocked){
             if (DEBUG)
                 Gdx.app.log("Children", "placed" + added_object.toString());
-            if(added_object instanceof MapTile){
-                // если не проходимый добавим его к обрабатываемым объектам
-                if(((MapTile) added_object).is_passable == false)
-                    collisionDetector.allStaticObjects.add(added_object);
-            }
-            else if(added_object instanceof Player){
-                collisionDetector.allControlledObjects.add(added_object);
-            }
-
             map.get_layer((int)added_object.position.z).addActor(added_object);
             //addActor(added_object);
         }
@@ -126,8 +116,11 @@ public class World extends Stage {
 
     private void createWorld(){
         current_z = 0;
-        player = new Player(this, 0,0,0, 0);
-        collisionDetector.allControlledObjects.add(player);
+        player = new Player(this, 2,6,1, 0);
+        this.load("map.txt");
+
+        collisionDetector.addControlledObject(player, 1);
+
     }
 
     @Override
@@ -325,7 +318,18 @@ public class World extends Stage {
                                 Integer.parseInt(other_params[1]),
                                 (int)for_coords[0],(int)for_coords[1],(int)for_coords[2],
                                 true);
-                        new_object.is_passable = false;
+                        new_object.is_solid = true;
+                        if(new_object.getId() != 5)
+                            new_object.is_passable = true;
+                        if(new_object.getId() == 96)
+                            new_object.is_activ = true;
+                        // если начали вставлять на новый слой, сначала добавим его
+                        Gdx.app.log("LOAD", "Static added " + new_object.position.z);
+                        if((int)new_object.position.z > collisionDetector.getCountCollisionMaps() - 1)
+                            collisionDetector.addNewLayerCollisionMap();
+                        if(new_object.is_passable == false || new_object.is_activ == true) {
+                            collisionDetector.addStaticObject(new_object, (int) new_object.position.z);
+                        }
                         add_object(new_object);
                     }
 
@@ -335,8 +339,7 @@ public class World extends Stage {
         } catch (IOException e){
             e.printStackTrace();
         }
-        Gdx.app.log("WORLD", "Walls added " + collisionDetector.allStaticObjects.size);
-        Gdx.app.log("WORLD", "Colladed added " + collisionDetector.allControlledObjects.size);
+        //Gdx.app.log("LOAD", "Static added " + collisionDetector.allStaticObjects.size);
     }
 
 

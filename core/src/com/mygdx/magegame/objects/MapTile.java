@@ -2,6 +2,7 @@ package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mygdx.magegame.objects.tiles.ActiveOnPlayerTouch;
 import com.mygdx.magegame.world.World;
 
 public class MapTile extends GameObject {
@@ -11,6 +12,35 @@ public class MapTile extends GameObject {
     String human_name; // "Человеческое название" тайла, заданное заранее
     public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
     public boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
+    public boolean is_activ; // Может ли взаимодейстовать это тайл
+
+    enum Functions{
+        RAISEPLAYER(1, new ActiveOnPlayerTouch(){
+            @Override
+            public void active(Player player) {
+                player.parent_world.setCurrent_z(player.getLayer());
+                player.position.z += 1;
+
+            }
+        }),
+        DROPPLAYER(2, new ActiveOnPlayerTouch(){
+            @Override
+            public void active(Player player) {
+                player.parent_world.setCurrent_z(player.getLayer());
+                player.position.z += 1;
+            }
+        });
+        private int id;
+        private ActiveOnPlayerTouch func;
+
+        Functions(int id, ActiveOnPlayerTouch func){
+            this.func = func;
+            this.id = id;
+        }
+        public ActiveOnPlayerTouch getFunc(){
+            return func;
+        }
+    }
 
     public MapTile(World world,int tileset_id, int id, int x, int y, int z, boolean is_camera_oriented){
         // Создаёт квадратный объект из текстуры с размером стороны - size.
@@ -64,5 +94,13 @@ public class MapTile extends GameObject {
     public String toString() {
         return String.format("MapTile{(%f, %f, %f), %d, %d}",
                 position.x, position.y, position.z, tileset_id, id);
+    }
+
+    public void active(Player player, ActiveOnPlayerTouch func) {
+        func.active(player);
+    }
+
+    public int getId() {
+        return id;
     }
 }

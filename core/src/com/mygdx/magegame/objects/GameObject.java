@@ -27,6 +27,11 @@ public abstract class GameObject extends Actor {
         position.set(x, y, z);
     }
 
+    // вернет индекс слоя, на котором находится обьект
+    public int getLayer(){
+        return (int)position.z;
+    }
+
     public void onCollision(GameObject gameObject){
 
     }

@@ -11,11 +11,14 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
+import com.mygdx.magegame.objects.tiles.ActiveOnPlayerTouch;
+import com.mygdx.magegame.world.TiledLayer;
 import com.mygdx.magegame.world.World;
 
 import java.util.HashMap;
@@ -58,17 +61,15 @@ public class Player extends GameObject {
     Vector3 endPoint = new Vector3();
     // предыдущая точка из которой перешли
     Vector3 previosPoint = new Vector3();
-
-
-
+    // используется для нахождения угла под которым коснулись
+    Vector2 collisionVector = new Vector2();
+    // каким углом модельки коснулись
+    float collisionAngle;
     // угол, по которому движется
     float angleDirection;
 
     TextureRegion object_texture_region; // То, что рисуется
     static final TileSet parent_tileSet = new TileSet(1); // Откуда берутся текстурки
-    // угол, куда смотрит текстура
-    float angleTexture;
-
 
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
@@ -119,56 +120,59 @@ public class Player extends GameObject {
 
     @Override
     public void onCollision(GameObject gameObject) {
-        // обработка сстолкновения со статическим объектом или игроком
+
         //Gdx.app.log("PLAYER", "COLLISION WITH"+gameObject.getX()+" " + gameObject.getY());
-        // зашли слева
-        Vector2 temp = new Vector2(
-                getX() + getWidth()/2 -gameObject.getX()-gameObject.getWidth()/2,
-                getY() + getHeight()/2 -gameObject.getY()-gameObject.getHeight()/2);
-        Gdx.app.log("PLAYER", "COLLISION ANGLE" + temp.angle());
-        float collisionAngle = temp.angle(); // угол с которого пересечен обьект (0 справа)
-        // зашли сверху
-        if(collisionAngle > 45 && collisionAngle <= 135){
-            if(velocity.y != 0)
-                //this.position.y = previosPoint.y;
-                this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
-            this.setColor(255,0,0,1);
-            velocity.y = 0;
-        }
-        // зашли слева
-        else if(collisionAngle > 135 && collisionAngle <= 225){
-            if(velocity.x != 0)
-                //this.position.y = previosPoint.y;
-                this.position.x = gameObject.getX() - this.getWidth() - EPS;
-            this.setColor(255,0,0,1);
-            velocity.x = 0;
-        }
-        // зашли снизу
-        else if(collisionAngle > 225 && collisionAngle <= 315){
-            if(velocity.y != 0)
-                //this.position.y = previosPoint.y;
-                this.position.y = gameObject.getY() - this.getHeight() - EPS;
-            this.setColor(255,0,0,1);
-            velocity.y = 0;
-        }
-        // зашли справа
-        else if(collisionAngle > 315 || collisionAngle <= 45){
-            if(velocity.x != 0)
-                //this.position.y = previosPoint.y;
-                this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
-            this.setColor(255,0,0,1);
-            velocity.x = 0;
+        // находим вектор из центра обьекта, с кот столкнулись до центра обьекта который столкнулся
+
+        // обработка сстолкновения со статическим тайлом
+        if(gameObject instanceof MapTile)
+        {
+            // если тайл непроходимый
+            if(((MapTile) gameObject).is_passable == false)
+            {
+                collisionVector.x = getX() + getWidth()/2 - gameObject.getX() - gameObject.getWidth()/2;
+                collisionVector.y = getY() + getHeight()/2 - gameObject.getY() - gameObject.getHeight()/2;
+                //Gdx.app.log("PLAYER", "COLLISION ANGLE" + collisionVector.angle());
+                collisionAngle = collisionVector.angle(); // угол с которого пересечен обьект (0 справа)
+                // зашли сверху
+                if(collisionAngle > 45 && collisionAngle <= 135){
+                    if(velocity.y != 0)
+                        this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.y = 0;
+                }
+                // зашли слева
+                else if(collisionAngle > 135 && collisionAngle <= 225){
+                    if(velocity.x != 0)
+                        this.position.x = gameObject.getX() - this.getWidth() - EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.x = 0;
+                }
+                // зашли снизу
+                else if(collisionAngle > 225 && collisionAngle <= 315){
+                    if(velocity.y != 0)
+                        this.position.y = gameObject.getY() - this.getHeight() - EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.y = 0;
+                }
+                // зашли справа
+                else if(collisionAngle > 315 || collisionAngle <= 45){
+                    if(velocity.x != 0)
+                        this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
+                    this.setColor(255,0,0,1);
+                    velocity.x = 0;
+                }
+                this.setPosition(position.x, position.y);
+                //Gdx.app.log("PLAYER", "NEW POS " + position.toString());
+            }
+            if(((MapTile) gameObject).getId() == 96)
+            {
+                Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
+                ((MapTile) gameObject).active(this, MapTile.Functions.RAISEPLAYER.getFunc());
+                Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
+            }
         }
 
-        /*if(this.getY() < gameObject.getY() + gameObject.getHeight()){
-            if(velocity.y != 0)
-                //this.position.y = previosPoint.y;
-                this.position.y = gameObject.getY()+gameObject.getHeight() + 0.1f;
-            this.setColor(255,0,0,1);
-            velocity.y = 0;
-        }*/
-        this.setPosition(position.x, position.y);
-        //Gdx.app.log("PLAYER", "NEW POS " + position.toString());
     }
 
     private void handleInput(int keycode) {
@@ -232,11 +236,32 @@ public class Player extends GameObject {
         if( obj != null ){
             onCollision(obj);
         }
+        //getX()+getHeight()/4;
+
+        Group temp = parent_world.getMap().get_layer(this.getLayer()-1);
+        Actor t;
+        if((t = temp.hit(getX()+getWidth(), getY()+ getHeight(), false))!= null){
+            if(t instanceof MapTile) {
+                if (((MapTile) t).is_solid == false || ((MapTile) t).getLayer() != this.getLayer()-1) {
+                    this.position.z -= 1;
+                    parent_world.setCurrent_z(this.getLayer()-1);
+                    Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " " + ((MapTile) t).getLayer());
+                }
+            }
+        }
+        else
+        {
+            this.position.z -= 1;
+            parent_world.setCurrent_z(this.getLayer()-1);
+            Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
+        }
+
+
          // здесь проверка
         /* if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
                 state = State.NONE;
-                resetVelocity();
-            }*/
+                resetVelocity();*/
+
     }
 
     public Actor hit(float x, float y, boolean touchable) {
@@ -270,7 +295,6 @@ public class Player extends GameObject {
 
 
     public void set_texture(){
-
         int srcX = type*parent_tileSet.size;
         int srcY = 0;
 
@@ -280,19 +304,11 @@ public class Player extends GameObject {
                 2, 2);
     }
 
-    public  Vector2     getVelocity()                   { return velocity; }
-    public  void        setVelocity(Vector2 velocity)   {this.velocity = velocity;}
-    public  State       getState()                      {return state;}
+    public  Vector2     getVelocity()                           {return velocity;}
+    public  State       getState()                              {return state;}
+    public  Vector3     getPreviosPoint()                       {return previosPoint;}
+    public  Vector3     getPosition()                           {return position;}
 
-    public Vector3 getPreviosPoint() {
-        return previosPoint;
-    }
-
-    public Vector3 getPosition() {
-        return position;
-    }
-
-    public void setPreviosPoint(Vector3 previosPoint) {
-        this.previosPoint = previosPoint;
-    }
+    public  void        setPreviosPoint(Vector3 previosPoint)   {this.previosPoint = previosPoint;}
+    public  void        setVelocity(Vector2 velocity)           {this.velocity = velocity;}
 }

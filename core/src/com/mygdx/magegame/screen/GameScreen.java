@@ -169,7 +169,8 @@ public class GameScreen implements Screen, InputProcessor {
                 // Не работаем в отрицательных областях! Иначе ловим баг с неправильным размещением!
 
                 // Координаты добавляемого объекта
-                debug_tool.set_text(String.format("World coords: (%d, %d, %d)", actual_x, actual_y, world.getCurrent_z()));
+                debug_tool.set_text(String.format("Player coords: (%d, %d, %d)", (int)world.getPlayer().position.x,
+                        (int)world.getPlayer().position.y, (int)world.getPlayer().position.z));
 
                 if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
                     // Если зажат SHIFT, то пробуем удалить тайл
