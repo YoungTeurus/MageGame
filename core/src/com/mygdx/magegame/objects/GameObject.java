@@ -9,6 +9,8 @@ public abstract class GameObject extends Actor {
     public Vector3 position;
     boolean is_camera_oriented;
     World parent_world;
+    int tileset_id;
+    int id;
     public Circle phusBody;
 
     GameObject(World world){
@@ -38,7 +40,7 @@ public abstract class GameObject extends Actor {
 
     @Override
     public String toString() {
-        return String.format("GameObject{(%f, %f, %f)}",
+        return String.format("GameObject %f %f %f",
                 position.x, position.y, position.z);
     }
 }

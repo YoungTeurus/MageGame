@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
+import com.mygdx.magegame.objects.additional.AnimatedTextureRegion;
 import com.mygdx.magegame.mechanics.Dropable;
 import com.mygdx.magegame.objects.tiles.ActiveOnPlayerTouch;
 import com.mygdx.magegame.world.TiledLayer;
@@ -70,7 +71,11 @@ public class Player extends GameObject implements Dropable {
     // угол, по которому движется
     float angleDirection;
 
-    TextureRegion object_texture_region; // То, что рисуется
+    TextureRegion object_texture_region_body; // То, что рисуется
+    TextureRegion object_texture_region_head;
+    //TextureRegion object_texture_region_hands;
+    AnimatedTextureRegion object_texture_region_hands;
+    TextureRegion object_texture_region_legs;
     static final TileSet parent_tileSet = new TileSet(1); // Откуда берутся текстурки
 
     State state; //текущее состояние
@@ -137,11 +142,21 @@ public class Player extends GameObject implements Dropable {
         velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
         velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
         updateAngleDirection();
+
+        // Тупо для теста
+        // TODO: сделать запуск изменения текстур в другом месте
+        object_texture_region_hands.setFreeze(false);
+        object_texture_region_hands.setFrame(0);
     }
 
     public void resetVelocity(){
         getVelocity().x = 0;
         getVelocity().y = 0;
+
+        // Тупо для теста
+        // TODO: сделать остановку изменения текстур в другом месте
+        object_texture_region_hands.setFreeze(true);
+        object_texture_region_hands.setFrame(0);
     }
 
     private void processInput() {
@@ -159,8 +174,18 @@ public class Player extends GameObject implements Dropable {
             setRotation(angleDirection);
         }
         batch.setColor(this.getColor());
-        Texture t = object_texture_region.getTexture();
-        batch.draw(object_texture_region, getX(), getY(),
+        // Texture t = object_texture_region_body.getTexture();
+        batch.draw(object_texture_region_legs, getX(), getY(),
+                getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+        batch.draw(object_texture_region_hands, getX(), getY(),
+                getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+        object_texture_region_hands.next();
+        batch.draw(object_texture_region_body, getX(), getY(),
+                getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+        batch.draw(object_texture_region_head, getX(), getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
                 getScaleX(), getScaleY(), getRotation());
     }
@@ -182,38 +207,6 @@ public class Player extends GameObject implements Dropable {
         if(parent_world.dropController.checkFloorUnderObject(this) == false){
             parent_world.dropController.dropGameObject(this);
         }
-
-        // получаем слой под нашими ногами
-        /*Array<Vector2> contactPoints = new Array<Vector2>(){};
-        contactPoints.add(new Vector2(getX()+getWidth()/3,getY()+getHeight()/3));
-        contactPoints.add(new Vector2(getX()+getWidth()*2/3,getY()+getHeight()/3));
-        contactPoints.add(new Vector2(getX()+getWidth()/3,getY()+getHeight()*2/3));
-        contactPoints.add(new Vector2(getX()+getWidth()*2/3,getY()+getHeight()*2/3));
-
-        Group temp = parent_world.getMap().get_layer(this.getLayer()-1);
-        Actor t;
-        // есть ли под ногами что-то твердое
-        boolean floorIsSolid = false;
-        int tem = 0;
-
-        for (Vector2 point:contactPoints) {
-            if ((t = temp.hit(point.x, point.y, false)) != null) {
-                if (t instanceof MapTile) { //
-                    if (((MapTile) t).is_solid && ((MapTile) t).getLayer() == this.getLayer() - 1) {
-                        floorIsSolid = true;
-                        tem++;
-                        if(tem > 1)
-                            break;
-                    }
-                }
-            }
-        }
-        // если под ногами ничего нет или точка опоры всего одна, падаем
-        if(!floorIsSolid || tem == 1){
-            this.position.z -= 1;
-            parent_world.setCurrent_z(this.getLayer()-1);
-            Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " " + tem);
-        }*/
     }
 
     private void processCollisions() {
@@ -326,10 +319,23 @@ public class Player extends GameObject implements Dropable {
 
     public void set_texture(){
         int srcX = type*parent_tileSet.size;
-        int srcY = 0;
+        // int srcY = 0;
 
-        object_texture_region = new TextureRegion(parent_tileSet.texture,
-                srcX, srcY, parent_tileSet.size, parent_tileSet.size);
+        object_texture_region_body = new TextureRegion(parent_tileSet.texture,
+                srcX, 0, parent_tileSet.size, parent_tileSet.size);
+        object_texture_region_head = new TextureRegion(parent_tileSet.texture,
+                srcX, parent_tileSet.size, parent_tileSet.size, parent_tileSet.size);
+        object_texture_region_hands = new AnimatedTextureRegion(parent_tileSet.texture,
+                new int[]{0,parent_tileSet.size*2,parent_tileSet.size,parent_tileSet.size,
+                        parent_tileSet.size*4,parent_tileSet.size*2,parent_tileSet.size,parent_tileSet.size,
+                        0,parent_tileSet.size*2,parent_tileSet.size,parent_tileSet.size,
+                        parent_tileSet.size*5,parent_tileSet.size*2,parent_tileSet.size,parent_tileSet.size}
+                );
+        object_texture_region_hands.set_timer(10);
+        //object_texture_region_hands = new TextureRegion(parent_tileSet.texture,
+        //        srcX, parent_tileSet.size * 2, parent_tileSet.size, parent_tileSet.size);
+        object_texture_region_legs = new TextureRegion(parent_tileSet.texture,
+                srcX, parent_tileSet.size * 3, parent_tileSet.size, parent_tileSet.size);
         setBounds(position.x, position.y,
                 2, 2);
     }

@@ -7,8 +7,6 @@ import com.mygdx.magegame.world.World;
 
 public class MapTile extends GameObject {
     TextureRegion object_texture_region;
-    int id;
-    int tileset_id;
     String human_name; // "Человеческое название" тайла, заданное заранее
     public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
     public boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
@@ -49,13 +47,13 @@ public class MapTile extends GameObject {
         this.tileset_id = tileset_id;
         set_pos(x, y, z);
         this.is_camera_oriented = is_camera_oriented;
-        set_texture(id);
+        setTexture(id);
         human_name = parent_world.tileSets[tileset_id].getHumanNameById(id);
         is_passable = parent_world.tileSets[tileset_id].getIsPassableById(id);
         is_solid = parent_world.tileSets[tileset_id].getIsSolidById(id);
     }
 
-    public void set_texture(int new_id){
+    public void setTexture(int new_id){
          // Координаты текстурки в тайлсете вычисляются по id
          // Каждый тайлсет может вмещать до X тайлов со следующими id:
          // 0                    1                      2                      ...  num_of_tiles_in_row-1
@@ -92,7 +90,7 @@ public class MapTile extends GameObject {
 
     @Override
     public String toString() {
-        return String.format("MapTile{(%f, %f, %f), %d, %d}",
+        return String.format("MapTile %f %f %f %d %d",
                 position.x, position.y, position.z, tileset_id, id);
     }
 

@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.mygdx.magegame.Consts.*;
+import static com.mygdx.magegame.WorkWithFiles.get_params_from_file;
 
 public class World extends Stage {
     public TileSet[] tileSets = new TileSet[num_of_tilesets]; // Все тайлсеты для данного мира
@@ -121,7 +122,7 @@ public class World extends Stage {
     private void createWorld(){
         current_z = 0;
         player = new Player(this, 2,6,1, 0);
-        this.load("map.txt");
+        this.load(".//core//assets//maps//" + "map_0_new.txt");
 
         collisionDetector.addControlledObject(player, 1);
 
@@ -252,97 +253,127 @@ public class World extends Stage {
 
     public void load(String filename){
         // Загрузка мира из файла
-        try{
-            map.clear();
 
-            FileReader fr = new FileReader(filename);
-            Scanner scan = new Scanner(fr);
+        Array<String[]> params = get_params_from_file(filename);
 
-            int line = 0;
-            Pattern pattern1 = Pattern.compile("\\w+\\{.+}"); // Поиск строк, подходящих для наших объектов
-            Pattern pattern2 = Pattern.compile("((-?\\d+,-?\\d+)([,][\\s])?){3}"); // Поиск координат в каждой из строк
-            Pattern pattern3 = Pattern.compile("-?\\d+,-?\\d+"); // Поиск одного float
-            Pattern pattern4 = Pattern.compile("\\w+\\{"); // Поиск имени объекта
-            Pattern pattern5 = Pattern.compile("-?\\d+"); // Поиск всех остальных аргуметов
-
-            float[] for_coords = new float[3];
-            String[] other_params = new String[10]; // До 10-и аргументов
-
-            while (scan.hasNextLine()){
-                String cur_line = scan.nextLine();
-                Gdx.app.log("Load", "String" + line + " :" + cur_line);
-                Matcher matcher1 = pattern1.matcher(cur_line);
-                Matcher matcher2 = pattern2.matcher(cur_line);
-                Matcher matcher3 = pattern3.matcher(cur_line);
-                Matcher matcher4 = pattern4.matcher(cur_line);
-                if (matcher1.find() && matcher4.find()){
-                    if (DEBUG){
-                        Gdx.app.log("Load", "String" + line + " : was found pattern 1");
-                    }
-                    // Находим название класса
-                    int start = matcher4.start();
-                    int end = matcher4.end();
-                    String name_of_class = cur_line.substring(start, end-1);
-
-                    if (matcher2.find()){ // Находим координаты
-                        start = matcher2.start();
-                        end = matcher2.end();
-                        String coords = cur_line.substring(start, end);
-                        if (DEBUG)
-                            Gdx.app.log("Load", "String" + line + " : was found pattern 2 :" + coords);
-                        int i = 0;
-                        while (matcher3.find()){
-                            int startf = matcher3.start();
-                            int endf = matcher3.end();
-                            String stringf = cur_line.substring(startf, endf).replace(",",".");
-                            float fl = Float.parseFloat(stringf);
-                            if (DEBUG) {
-                                Gdx.app.log("Load", "String" + line + " : was found pattern 3 :" + fl);
-                            }
-                            for_coords[i] = fl;
-                            i++;
-                        }
-                    }
-                    // На данном этапе end хранит позицию закрывающей скобки после координат
-                    String string_for_all_other_params = cur_line.substring(end);
-                    Matcher matcher5 = pattern5.matcher(string_for_all_other_params);
-                    int i = 0;
-                    while (matcher5.find()){
-                        start = matcher5.start();
-                        end = matcher5.end();
-                        other_params[i] = string_for_all_other_params.substring(start, end);
-                        if (DEBUG)
-                            Gdx.app.log("Load", "String" + line + " : was found pattern 5 :" + other_params[i]);
-                        i++;
-                    }
-
-                    if (name_of_class.equals("MapTile")){
-                        MapTile new_object = new MapTile(this,
-                                Integer.parseInt(other_params[0]),
-                                Integer.parseInt(other_params[1]),
-                                (int)for_coords[0],(int)for_coords[1],(int)for_coords[2],
-                                true);
-                        new_object.is_solid = true;
-                        if(new_object.getId() != 5)
-                            new_object.is_passable = true;
-                        if(new_object.getId() == 96)
-                            new_object.is_activ = true;
-                        // если начали вставлять на новый слой, сначала добавим его
-                        Gdx.app.log("LOAD", "Static added " + new_object.position.z);
-                        if((int)new_object.position.z > collisionDetector.getCountCollisionMaps() - 1)
-                            collisionDetector.addNewLayerCollisionMap();
-                        if(new_object.is_passable == false || new_object.is_activ == true) {
-                            collisionDetector.addStaticObject(new_object, (int) new_object.position.z);
-                        }
-                        add_object(new_object);
-                    }
-
+        int num_of_params = params.size;
+        for(int i=0; i < num_of_params; i++) {
+            if (params.get(i)[0].equals("MapTile")){ // Если это MapTile
+                MapTile new_object = new MapTile(this,
+                        (int)Float.parseFloat(params.get(i)[4]), // ID тайлсет-а
+                        (int)Float.parseFloat(params.get(i)[5]), // ID тайла
+                        (int)Float.parseFloat(params.get(i)[1].replace(",",".")), // Координата x
+                        (int)Float.parseFloat(params.get(i)[2].replace(",",".")), // Координата y
+                        (int)Float.parseFloat(params.get(i)[3].replace(",",".")), // Координата z
+                        true);
+                new_object.is_solid = true;
+                if(new_object.getId() != 5)
+                    new_object.is_passable = true;
+                if(new_object.getId() == 96)
+                    new_object.is_activ = true;
+                // если начали вставлять на новый слой, сначала добавим его
+                Gdx.app.log("LOAD", "Static added " + new_object.position.z);
+                if((int)new_object.position.z > collisionDetector.getCountCollisionMaps() - 1)
+                    collisionDetector.addNewLayerCollisionMap();
+                if(new_object.is_passable == false || new_object.is_activ == true) {
+                    collisionDetector.addStaticObject(new_object, (int) new_object.position.z);
                 }
-                line++;
+                add_object(new_object);
             }
-        } catch (IOException e){
-            e.printStackTrace();
         }
+
+        //try{
+        //    map.clear();
+//
+        //    FileReader fr = new FileReader(filename);
+        //    Scanner scan = new Scanner(fr);
+//
+        //    int line = 0;
+        //    Pattern pattern1 = Pattern.compile("\\w+\\{.+}"); // Поиск строк, подходящих для наших объектов
+        //    Pattern pattern2 = Pattern.compile("((-?\\d+,-?\\d+)([,][\\s])?){3}"); // Поиск координат в каждой из строк
+        //    Pattern pattern3 = Pattern.compile("-?\\d+,-?\\d+"); // Поиск одного float
+        //    Pattern pattern4 = Pattern.compile("\\w+\\{"); // Поиск имени объекта
+        //    Pattern pattern5 = Pattern.compile("-?\\d+"); // Поиск всех остальных аргуметов
+//
+        //    float[] for_coords = new float[3];
+        //    String[] other_params = new String[10]; // До 10-и аргументов
+//
+        //    while (scan.hasNextLine()){
+        //        String cur_line = scan.nextLine();
+        //        Gdx.app.log("Load", "String" + line + " :" + cur_line);
+        //        Matcher matcher1 = pattern1.matcher(cur_line);
+        //        Matcher matcher2 = pattern2.matcher(cur_line);
+        //        Matcher matcher3 = pattern3.matcher(cur_line);
+        //        Matcher matcher4 = pattern4.matcher(cur_line);
+        //        if (matcher1.find() && matcher4.find()){
+        //            if (DEBUG){
+        //                Gdx.app.log("Load", "String" + line + " : was found pattern 1");
+        //            }
+        //            // Находим название класса
+        //            int start = matcher4.start();
+        //            int end = matcher4.end();
+        //            String name_of_class = cur_line.substring(start, end-1);
+//
+        //            if (matcher2.find()){ // Находим координаты
+        //                start = matcher2.start();
+        //                end = matcher2.end();
+        //                String coords = cur_line.substring(start, end);
+        //                if (DEBUG)
+        //                    Gdx.app.log("Load", "String" + line + " : was found pattern 2 :" + coords);
+        //                int i = 0;
+        //                while (matcher3.find()){
+        //                    int startf = matcher3.start();
+        //                    int endf = matcher3.end();
+        //                    String stringf = cur_line.substring(startf, endf).replace(",",".");
+        //                    float fl = Float.parseFloat(stringf);
+        //                    if (DEBUG) {
+        //                        Gdx.app.log("Load", "String" + line + " : was found pattern 3 :" + fl);
+        //                    }
+        //                    for_coords[i] = fl;
+        //                    i++;
+        //                }
+        //            }
+        //            // На данном этапе end хранит позицию закрывающей скобки после координат
+        //            String string_for_all_other_params = cur_line.substring(end);
+        //            Matcher matcher5 = pattern5.matcher(string_for_all_other_params);
+        //            int i = 0;
+        //            while (matcher5.find()){
+        //                start = matcher5.start();
+        //                end = matcher5.end();
+        //                other_params[i] = string_for_all_other_params.substring(start, end);
+        //                if (DEBUG)
+        //                    Gdx.app.log("Load", "String" + line + " : was found pattern 5 :" + other_params[i]);
+        //                i++;
+        //            }
+//
+        //            if (name_of_class.equals("MapTile")){
+        //                MapTile new_object = new MapTile(this,
+        //                        Integer.parseInt(other_params[0]),
+        //                        Integer.parseInt(other_params[1]),
+        //                        (int)for_coords[0],(int)for_coords[1],(int)for_coords[2],
+        //                        true);
+        //                new_object.is_solid = true;
+        //                if(new_object.getId() != 5)
+        //                    new_object.is_passable = true;
+        //                if(new_object.getId() == 96)
+        //                    new_object.is_activ = true;
+        //                // если начали вставлять на новый слой, сначала добавим его
+        //                Gdx.app.log("LOAD", "Static added " + new_object.position.z);
+        //                if((int)new_object.position.z > collisionDetector.getCountCollisionMaps() - 1)
+        //                    collisionDetector.addNewLayerCollisionMap();
+        //                if(new_object.is_passable == false || new_object.is_activ == true) {
+        //                    collisionDetector.addStaticObject(new_object, (int) new_object.position.z);
+        //                }
+        //                add_object(new_object);
+        //            }
+//
+        //        }
+        //        line++;
+        //    }
+        //    fr.close();
+        //} catch (IOException e){
+        //    e.printStackTrace();
+        //}
         //Gdx.app.log("LOAD", "Static added " + collisionDetector.allStaticObjects.size);
     }
 

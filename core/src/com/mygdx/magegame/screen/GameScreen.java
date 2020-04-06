@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.MageGame;
 import com.mygdx.magegame.world.World;
 import com.mygdx.magegame.objects.GameObject;
@@ -15,6 +16,7 @@ import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.TextObject;
 
 import static com.mygdx.magegame.Consts.*;
+import static com.mygdx.magegame.WorkWithFiles.get_params_from_file;
 
 
 public class GameScreen implements Screen, InputProcessor {
@@ -265,10 +267,10 @@ public class GameScreen implements Screen, InputProcessor {
             updateTextsForPlaceTile();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
-            world.save("map.txt");
+            world.save(".//core//assets//maps//" + "map_0_new.txt");
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
-            world.load("map.txt");
+            world.load(".//core//assets//maps//" + "map_0_new.txt");
         }
     }
 
