@@ -4,10 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -31,6 +28,7 @@ public class GameScreen implements Screen, InputProcessor {
     SpriteBatch fb;
     Sprite game_interface;
     boolean need_to_update_interface; // Если этот флаг - false, значит не перерисовываем интерфейс
+    OrthographicCamera c;
 
     public GameScreen(final MageGame game){
         this.game = game;
@@ -48,6 +46,10 @@ public class GameScreen implements Screen, InputProcessor {
         drawer = new ShapeDrawer(fb, region);
 
         need_to_update_interface = true;
+        // Исправление координат у интерфейса
+        c = new OrthographicCamera();
+        c.setToOrtho(true, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        game.getBatch().setProjectionMatrix(c.combined);
 
         // Создание мира
         world = new World(world_w,world_h,true);
@@ -97,6 +99,22 @@ public class GameScreen implements Screen, InputProcessor {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             world.getCamera().translate(0, -1, 0);
         }
+        if (Gdx.input.isKeyPressed(Input.Keys.P)) {
+            world.getPlayer().current_hp = Math.max(world.getPlayer().current_hp - 3, 0);
+            update_interface();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.O)) {
+            world.getPlayer().current_hp = Math.min(world.getPlayer().current_hp + 3, world.getPlayer().max_hp);
+            update_interface();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.I)) {
+            world.getPlayer().current_mp = Math.max(world.getPlayer().current_mp - 3, 0);
+            update_interface();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.U)) {
+            world.getPlayer().current_mp = Math.min(world.getPlayer().current_mp + 3, world.getPlayer().max_mp);
+            update_interface();
+        }
         // Чисто для теста - конец
     }
 
@@ -106,22 +124,22 @@ public class GameScreen implements Screen, InputProcessor {
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             fb.begin();
             drawer.setColor(0.85f, 0.1f, 0.1f, 1f);
-            //drawer.filledCircle(0,0,(float)window_w/10);
             drawer.sector(0, 0, (float) window_w / 10, 0, (float) (3.15 / 2));
+            drawer.setColor(0.1f, 0.35f, 0.85f, 1f);
+            drawer.sector(window_w, 0, (float) window_w / 10, (float) (3.14 / 2), 3.15f);
 
-            //Gdx.gl.glEnable(GL_BLEND);
-            //Gdx.gl.glBlendFunc(GL_ZERO,GL_ONE_MINUS_SRC_ALPHA);
             drawer.getBatch().enableBlending();
             drawer.getBatch().setBlendFunction(GL_ONE_MINUS_SRC_ALPHA, GL_ZERO);
 //
             drawer.setColor(0f, 0f, 0f, 1f);
-            drawer.filledRectangle(25, 25, 500, 400);
+
+            float percent_of_hp = world.getPlayer().current_hp / (float)world.getPlayer().max_hp;
+            float percent_of_mp = world.getPlayer().current_mp / (float)world.getPlayer().max_mp;
+
+            drawer.filledRectangle(0, (window_w / 10f )* percent_of_hp, window_w/10f, window_h);
+            drawer.filledRectangle(window_w*0.9f,(window_w / 10f )* percent_of_mp,window_w/10f, window_h);
 //
             drawer.getBatch().disableBlending();
-            //Gdx.gl.glDisable(GL_BLEND);
-
-            drawer.setColor(0.1f, 0.35f, 0.85f, 1f);
-            drawer.sector(window_w, 0, (float) window_w / 10, (float) (3.14 / 2), 3.15f);
             drawer.setColor(0.6f, 0.6f, 0.6f, 1f);
             drawer.rectangle(200, 0, 400, 50);
             fb.end();

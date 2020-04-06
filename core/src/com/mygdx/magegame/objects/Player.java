@@ -2,16 +2,12 @@ package com.mygdx.magegame.objects;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.Array;
@@ -20,8 +16,6 @@ import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
 import com.mygdx.magegame.objects.additional.AnimatedTextureRegion;
 import com.mygdx.magegame.mechanics.Dropable;
-import com.mygdx.magegame.objects.tiles.ActiveOnPlayerTouch;
-import com.mygdx.magegame.world.TiledLayer;
 import com.mygdx.magegame.world.World;
 
 import java.util.HashMap;
@@ -81,8 +75,11 @@ public class Player extends GameObject implements Dropable {
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
-    int hp; // Запас жизней мага
-    int mp; // Запас маны мага
+    // Временно public
+    public int max_hp; // Максимальный запас жизней мага
+    public int current_hp; // Текущий запас жизней мага
+    public int max_mp; // Максимальный запас маны мага
+    public int current_mp; // Текущий запас маны мага
 
     public Player(World world, int x, int y, int z, int type){
         super(world);
@@ -323,8 +320,8 @@ public class Player extends GameObject implements Dropable {
 
     private void set_stats(){
         // Устанавливает начальные значения показателей
-        hp = 100;
-        mp = 100;
+        max_hp = current_hp = 100;
+        max_mp = current_mp = 100;
     }
 
     public void set_texture(){
