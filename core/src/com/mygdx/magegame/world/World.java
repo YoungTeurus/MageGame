@@ -55,7 +55,7 @@ public class World extends Stage {
     // Тестовая функция:
     public boolean need_to_draw_other_level_rather_than_current = true; // Нужно ли отрисовывать другие уровни кроме текущего
 
-    public World(int worldWidth, int worldHeight){
+    public World(int worldWidth, int worldHeight, boolean add_player){
         super(new ExtendViewport(worldWidth, worldHeight));
 
         this.worldWidth = worldWidth;
@@ -73,7 +73,7 @@ public class World extends Stage {
         map = new TiledLayer(this);
         addActor(map);
 
-        createWorld();
+        createWorld(add_player);
 
     }
 
@@ -119,13 +119,14 @@ public class World extends Stage {
         }
     }
 
-    private void createWorld(){
+    private void createWorld(boolean add_player){
+
         current_z = 0;
-        player = new Player(this, 2,6,1, 0);
         this.load(".//core//assets//maps//" + "map_0_new.txt");
-
-        collisionDetector.addControlledObject(player, 1);
-
+        if (add_player){
+            player = new Player(this, 2,6,1, 0);
+            collisionDetector.addControlledObject(player, 1);
+        }
     }
 
     @Override
