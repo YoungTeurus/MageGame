@@ -40,7 +40,7 @@ public abstract class GameObject extends Actor {
 
     @Override
     public String toString() {
-        return String.format("GameObject{(%f, %f, %f)}",
+        return String.format("GameObject %f %f %f",
                 position.x, position.y, position.z);
     }
 }

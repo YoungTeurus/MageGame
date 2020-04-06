@@ -90,7 +90,7 @@ public class MapTile extends GameObject {
 
     @Override
     public String toString() {
-        return String.format("MapTile{(%f, %f, %f), %d, %d}",
+        return String.format("MapTile %f %f %f %d %d",
                 position.x, position.y, position.z, tileset_id, id);
     }
 

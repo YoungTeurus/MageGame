@@ -3,6 +3,7 @@ package com.mygdx.magegame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.objects.MapTile;
 
 import java.io.FileReader;
@@ -12,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.mygdx.magegame.Consts.*;
+import static com.mygdx.magegame.WorkWithFiles.get_params_from_file;
 
 public class TileSet {
     public Texture texture;
@@ -32,62 +34,96 @@ public class TileSet {
 
     private void load_info(String filename){
         // Загрузка информации о тайлсете из текстового файла
-        try{
 
-            FileReader fr = new FileReader(".//core//assets//" + filename);
-            Scanner scan = new Scanner(fr);
+        Array<String[]> params = get_params_from_file(".//core//assets//" + filename);
 
-            int size_of_tileset = Integer.parseInt(scan.nextLine()); // Размер всего тайлсета
-            size = Integer.parseInt(scan.nextLine()); // Размер одного тайла
-            String class_name = scan.nextLine(); // Получаем название класса для которого предназначается этот массив
+        int num_of_params = params.size - 3; // Минус 3 обязательных в начале
 
-            num_of_tiles_in_row = size_of_tileset/size;
-            human_name_array = new String[num_of_tiles_in_row*num_of_tiles_in_row];
-            is_passable_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
-            is_solid_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+        int size_of_tileset = Integer.parseInt(params.get(0)[0]); // Размер всего тайлсета
+        size = Integer.parseInt(params.get(1)[0]); // Размер одного тайла
+        String class_name = params.get(2)[0]; // Получаем название класса для которого предназначается этот массив
 
-            // Дальше должны идти строки в виде:
-            // id_тайла human_name значение_is_passable значение_is_solid
-            int line = 0;
+        num_of_tiles_in_row = size_of_tileset/size;
+        human_name_array = new String[num_of_tiles_in_row*num_of_tiles_in_row];
+        is_passable_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+        is_solid_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
 
-            Pattern pattern1 = Pattern.compile("#.+"); // Поиск строк с комментариями
+        for(int i=0; i < num_of_params; i++){
+            //Заполняем массивы в соответствии с тем, кому они предназначаются
+            if (class_name.equals("MapTile")){
+                int tile_id = Integer.parseInt(params.get(3+i)[0]);
+                human_name_array[tile_id] = params.get(3+i)[1];
+                is_passable_array[tile_id] = Boolean.parseBoolean(params.get(3+i)[2]);
+                is_solid_array[tile_id] = Boolean.parseBoolean(params.get(3+i)[3]);
 
-            String[] read_params;
-
-            while (scan.hasNextLine()){
-                String cur_line = scan.nextLine();
-                Matcher matcher1 = pattern1.matcher(cur_line);
-                if (matcher1.find()){ // Если текущая строка - комментарий, пропускаем её
-                    continue;
-                }
-
-                read_params = cur_line.split("\\s"); // Разбиваем строку на отдельные параметры.
-
-                // Заполняем массивы в соответствии с тем, кому они предназначаются
-                if (class_name.equals("MapTile")){
-                    int tile_id = Integer.parseInt(read_params[0]);
-                    human_name_array[tile_id] = read_params[1];
-                    is_passable_array[tile_id] = Boolean.parseBoolean(read_params[2]);
-                    is_solid_array[tile_id] = Boolean.parseBoolean(read_params[3]);
-
-                    Gdx.app.log("Load Tileset", "Line" + line + " : was found tile: "
-                            + tile_id + " " + human_name_array[tile_id] + " " + is_passable_array[tile_id] + " "+
-                            is_solid_array[tile_id]);
-
-                    // TODO: заполнение свойств тайла из файла
-                }
-                if (class_name.equals("Player")) {
-                    int tile_id = Integer.parseInt(read_params[0]);
-                    human_name_array[tile_id] = read_params[1];
-                    Gdx.app.log("Load Tileset", "Line" + line + " : was found tile: "
-                            + tile_id + " " + human_name_array[tile_id]);
-                }
-
-                line++;
+                Gdx.app.log("Load Tileset", "Line" + 3+i + " : was found tile: "
+                        + tile_id + " " + human_name_array[tile_id] + " " + is_passable_array[tile_id] + " "+
+                        is_solid_array[tile_id]);
+                // TODO: заполнение свойств тайла из файла
             }
-        } catch (IOException e){
-            e.printStackTrace();
+            if (class_name.equals("Player")) {
+                int tile_id = Integer.parseInt(params.get(3+i)[0]);
+                human_name_array[tile_id] = params.get(3+i)[1];
+                Gdx.app.log("Load Tileset", "Line" + 3+i + " : was found tile: "
+                        + tile_id + " " + human_name_array[tile_id]);
+            }
         }
+
+
+
+        //try{
+//
+        //    FileReader fr = new FileReader(".//core//assets//" + filename);
+        //    Scanner scan = new Scanner(fr);
+//
+        //    num_of_tiles_in_row = size_of_tileset/size;
+        //    human_name_array = new String[num_of_tiles_in_row*num_of_tiles_in_row];
+        //    is_passable_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+        //    is_solid_array = new Boolean[num_of_tiles_in_row*num_of_tiles_in_row];
+//
+        //    // Дальше должны идти строки в виде:
+        //    // id_тайла human_name значение_is_passable значение_is_solid
+        //    int line = 0;
+//
+        //    Pattern pattern1 = Pattern.compile("#.+"); // Поиск строк с комментариями
+//
+        //    String[] read_params;
+//
+        //    while (scan.hasNextLine()){
+        //        String cur_line = scan.nextLine();
+        //        Matcher matcher1 = pattern1.matcher(cur_line);
+        //        if (matcher1.find()){ // Если текущая строка - комментарий, пропускаем её
+        //            continue;
+        //        }
+//
+        //        read_params = cur_line.split("\\s"); // Разбиваем строку на отдельные параметры.
+//
+        //        // Заполняем массивы в соответствии с тем, кому они предназначаются
+        //        if (class_name.equals("MapTile")){
+        //            int tile_id = Integer.parseInt(read_params[0]);
+        //            human_name_array[tile_id] = read_params[1];
+        //            is_passable_array[tile_id] = Boolean.parseBoolean(read_params[2]);
+        //            is_solid_array[tile_id] = Boolean.parseBoolean(read_params[3]);
+//
+        //            Gdx.app.log("Load Tileset", "Line" + line + " : was found tile: "
+        //                    + tile_id + " " + human_name_array[tile_id] + " " + is_passable_array[tile_id] + " "+
+        //                    is_solid_array[tile_id]);
+//
+        //            // TODO: заполнение свойств тайла из файла
+        //        }
+        //        if (class_name.equals("Player")) {
+        //            int tile_id = Integer.parseInt(read_params[0]);
+        //            human_name_array[tile_id] = read_params[1];
+        //            Gdx.app.log("Load Tileset", "Line" + line + " : was found tile: "
+        //                    + tile_id + " " + human_name_array[tile_id]);
+        //        }
+//
+        //        line++;
+        //    }
+        //    fr.close();
+        //} catch (IOException e){
+        //    e.printStackTrace();
+        //}
     }
 
     public void dispose(){
