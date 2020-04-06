@@ -4,10 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.mygdx.magegame.MageGame;
 import com.mygdx.magegame.world.World;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import static com.badlogic.gdx.graphics.GL20.*;
 import static com.mygdx.magegame.Consts.*;
 
 
@@ -15,8 +24,30 @@ public class GameScreen implements Screen, InputProcessor {
     final MageGame game; // Сама игра(?) - взято из туториала
     World world;
 
+    // Всё для отрисовки интерфейса
+    Texture drawerTexture;
+    ShapeDrawer drawer;
+    FrameBuffer fbo;
+    SpriteBatch fb;
+    Sprite game_interface;
+    boolean need_to_update_interface; // Если этот флаг - false, значит не перерисовываем интерфейс
+
     public GameScreen(final MageGame game){
         this.game = game;
+        fbo = new FrameBuffer(Pixmap.Format.RGBA8888,Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+        fb = new SpriteBatch();
+        //screen_interface = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888);
+
+        // Всё ниже этого - создание ShapeDrawer
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.drawPixel(0, 0);
+        drawerTexture = new Texture(pixmap); //remember to dispose of later
+        pixmap.dispose();
+        TextureRegion region = new TextureRegion(drawerTexture, 0, 0, 1, 1);
+        drawer = new ShapeDrawer(fb, region);
+
+        need_to_update_interface = true;
 
         // Создание мира
         world = new World(world_w,world_h,true);
@@ -26,7 +57,6 @@ public class GameScreen implements Screen, InputProcessor {
         world.setKeyboardFocus(world.getPlayer());
         world.addActor(world.getPlayer());
     }
-
     @Override
     public void show() {
 
@@ -44,10 +74,70 @@ public class GameScreen implements Screen, InputProcessor {
         world.draw(); // вызовет actor.draw каждому актеру
         world.act();
 
+        // Ниже будет отрисовываться интерфейс
+        //game.getBatch().begin();
+        draw_interface();
+        //game.getBatch().end();
+
         // Обработка нажатий на клавиатуру
         if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
             world.load(".//core//assets//maps//" + "map_0_new.txt");
         }
+
+        // Чисто для теста
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            world.getCamera().translate(-1, 0, 0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            world.getCamera().translate(1, 0, 0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            world.getCamera().translate(0, 1, 0);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            world.getCamera().translate(0, -1, 0);
+        }
+        // Чисто для теста - конец
+    }
+
+    private void draw_interface(){
+        if (game_interface == null || need_to_update_interface) {
+            fbo.begin();
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            fb.begin();
+            drawer.setColor(0.85f, 0.1f, 0.1f, 1f);
+            //drawer.filledCircle(0,0,(float)window_w/10);
+            drawer.sector(0, 0, (float) window_w / 10, 0, (float) (3.15 / 2));
+
+            //Gdx.gl.glEnable(GL_BLEND);
+            //Gdx.gl.glBlendFunc(GL_ZERO,GL_ONE_MINUS_SRC_ALPHA);
+            drawer.getBatch().enableBlending();
+            drawer.getBatch().setBlendFunction(GL_ONE_MINUS_SRC_ALPHA, GL_ZERO);
+//
+            drawer.setColor(0f, 0f, 0f, 1f);
+            drawer.filledRectangle(25, 25, 500, 400);
+//
+            drawer.getBatch().disableBlending();
+            //Gdx.gl.glDisable(GL_BLEND);
+
+            drawer.setColor(0.1f, 0.35f, 0.85f, 1f);
+            drawer.sector(window_w, 0, (float) window_w / 10, (float) (3.14 / 2), 3.15f);
+            drawer.setColor(0.6f, 0.6f, 0.6f, 1f);
+            drawer.rectangle(200, 0, 400, 50);
+            fb.end();
+            fbo.end();
+
+            game_interface = new Sprite(fbo.getColorBufferTexture());
+            need_to_update_interface = false;
+        }
+        // TODO: Было бы круто рисовать поверх здоровья какую-нибудь анимированную текстурку, чтобы жизни были более красивыми.
+        game.getBatch().begin();
+        game_interface.draw(game.getBatch());
+        game.getBatch().end();
+    }
+
+    private void update_interface(){
+        need_to_update_interface = true;
     }
 
     @Override
@@ -75,6 +165,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void dispose() {
         world.dispose();
+        drawerTexture.dispose();
         Gdx.input.setInputProcessor(null);
     }
 

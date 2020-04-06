@@ -81,10 +81,14 @@ public class Player extends GameObject implements Dropable {
     State state; //текущее состояние
     int type; // Тип мага: в данный момент от 0 до 3.
 
+    int hp; // Запас жизней мага
+    int mp; // Запас маны мага
+
     public Player(World world, int x, int y, int z, int type){
         super(world);
         set_pos(x, y, z);
         this.type = type;
+        set_stats();
         set_texture();
         setRotation(270);
         setOrigin(SIZE/2, SIZE/2);
@@ -315,6 +319,12 @@ public class Player extends GameObject implements Dropable {
 
     public void StopReleased() {
         direction.get(direction.put(Keys.STOP, false));
+    }
+
+    private void set_stats(){
+        // Устанавливает начальные значения показателей
+        hp = 100;
+        mp = 100;
     }
 
     public void set_texture(){
