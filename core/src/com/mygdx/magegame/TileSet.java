@@ -27,7 +27,7 @@ public class TileSet {
 
     public TileSet(int tileset_id){
         // tileset_id смотрится в Consts
-        texture = new Texture(Gdx.files.internal(tilesets_filenames[tileset_id] + ".png"));
+        texture = new Texture(Gdx.files.internal(".//core//assets//spritesets//"+tilesets_filenames[tileset_id] + ".png"));
         load_info(tilesets_filenames[tileset_id] + ".txt");
         // is_passable_array и другие массивы распарсиваются при загрузке
     }
@@ -35,7 +35,7 @@ public class TileSet {
     private void load_info(String filename){
         // Загрузка информации о тайлсете из текстового файла
 
-        Array<String[]> params = get_params_from_file(".//core//assets//" + filename);
+        Array<String[]> params = get_params_from_file(".//core//assets//spritesets//" + filename);
 
         int num_of_params = params.size - 3; // Минус 3 обязательных в начале
 

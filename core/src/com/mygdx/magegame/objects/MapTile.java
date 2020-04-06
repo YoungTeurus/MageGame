@@ -8,6 +8,7 @@ import com.mygdx.magegame.world.World;
 public class MapTile extends GameObject {
     TextureRegion object_texture_region;
     String human_name; // "Человеческое название" тайла, заданное заранее
+    int size; // Необязательная переменная, хранящая размер тайла
     public boolean is_passable; // Можно ли проходить через этот тайл в горизонтальной плоскости?
     public boolean is_solid; // Можно ли стоять на этом тайле? (Падает ли персонаж при наступании на него?)
     public boolean is_activ; // Может ли взаимодейстовать это тайл
@@ -63,10 +64,17 @@ public class MapTile extends GameObject {
          id = new_id;
          int srcX = id%parent_world.tileSets[tileset_id].num_of_tiles_in_row * parent_world.tileSets[tileset_id].size;
          int srcY = id/parent_world.tileSets[tileset_id].num_of_tiles_in_row * parent_world.tileSets[tileset_id].size;
+         size = parent_world.tileSets[tileset_id].size;
 
-         object_texture_region = new TextureRegion(parent_world.tileSets[tileset_id].texture,
-                 srcX, srcY,
-                 parent_world.tileSets[tileset_id].size, parent_world.tileSets[tileset_id].size);
+         if (object_texture_region == null){
+             object_texture_region = new TextureRegion(parent_world.tileSets[tileset_id].texture,
+                     srcX, srcY,
+                     size, size);
+         }
+         else{
+             object_texture_region.setRegion(srcX, srcY,
+                     size, size);
+         }
          setBounds(position.x, position.y,
                  1, 1);
      }
@@ -101,4 +109,7 @@ public class MapTile extends GameObject {
     public int getId() {
         return id;
     }
+
+    public TextureRegion getObject_texture_region(){return object_texture_region;}
+    public int getSize(){return size;}
 }

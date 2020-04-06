@@ -1,0 +1,42 @@
+512
+32
+MapTile
+# id human_name is_passable is_solid
+0 floor false true
+1 floor_small_grass false true
+2 floor_big_grass false true
+3 floor_dirty false true
+4 wall_line false true
+5 wall false true
+6 wall_corner false true
+16 floor_bones false true
+17 floor_blood_drips false true
+18 floor_spiderNW false true
+19 floor_spiderNE false true
+20 wall_torches false true
+21 wall_green false true
+22 wall_broken false true
+23 wall_blood_middle false true
+32 floor_blood_drips_small false true
+33 floor_broken false true
+34 floor_spiderSW false true
+35 floor_spiderSE false true
+36 wall_blood_left false true
+37 wall_blood_right false true
+38 wall_spiderE false true
+39 wall_spiderW false true
+48 floor_gold false true
+49 floor_lava_line_horizontal false true
+50 floor_lava_line_vertical false true
+51 floor_lava_corner false true
+64 floor_lava_shortline_horizontal false true
+65 floor_lava_shortline_vertical false true
+66 floor_lava_1 false true
+67 floor_lava_2 false true
+80 floor_torches false true
+81 floor_bloodrune false true
+82 floor_small_grass_burnt false true
+83 floor_lava_drips false true
+96 column false true
+97 column_broken false true
+99 floor_blooddagger false true

@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.mygdx.magegame.MageGame;
 import com.mygdx.magegame.objects.GameObject;
@@ -53,6 +54,7 @@ public class EditorScreen implements Screen {
         debug_tool3.set_text(String.format("Camera coords: (%d, %d)",
                 (int)world.getCamera().position.x,
                 (int)world.getCamera().position.y));
+        place_tile = new MapTile(world, 0,id_of_place_tile,0,0,0,false);
         updateTextsForPlaceTile();
         world.getTexts().add(debug_tool, debug_tool2,debug_tool3, debug_tool4);
         world.getTexts().add(debug_tool5);
@@ -74,6 +76,9 @@ public class EditorScreen implements Screen {
         world.draw(); // вызовет actor.draw каждому актеру
 
         game.getBatch().begin();
+
+        game.getBatch().draw(place_tile.getObject_texture_region(), 50, 100+place_tile.getSize());
+
         for (GameObject current_text : world.getTexts()) {
             current_text.draw(game.getBatch(), 1);
         }
@@ -231,6 +236,7 @@ public class EditorScreen implements Screen {
                 world.tileSets[world.id_of_current_tileSet].getHumanNameById(id_of_place_tile),
                 world.tileSets[world.id_of_current_tileSet].getIsPassableById(id_of_place_tile),
                 world.tileSets[world.id_of_current_tileSet].getIsSolidById(id_of_place_tile)));
+        place_tile.setTexture(id_of_place_tile);
     }
 
     @Override
