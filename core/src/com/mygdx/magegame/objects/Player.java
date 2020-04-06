@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
+import com.mygdx.magegame.mechanics.Dropable;
 import com.mygdx.magegame.objects.tiles.ActiveOnPlayerTouch;
 import com.mygdx.magegame.world.TiledLayer;
 import com.mygdx.magegame.world.World;
@@ -31,7 +32,7 @@ import java.util.Map;
  Для сетевой игры: нажатия клавиатуры обрабатываем здесь, записывая в массив, что была нажата кнопка, игрок дальше сам
  обработает нужную функцию,
 */
-public class Player extends GameObject {
+public class Player extends GameObject implements Dropable {
 
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
     public static final float SPEED = 2f;
@@ -177,27 +178,42 @@ public class Player extends GameObject {
 
     }
 
-    private void processDrop() {
+    public void processDrop() {
+        if(parent_world.dropController.checkFloorUnderObject(this) == false){
+            parent_world.dropController.dropGameObject(this);
+        }
+
         // получаем слой под нашими ногами
+        /*Array<Vector2> contactPoints = new Array<Vector2>(){};
+        contactPoints.add(new Vector2(getX()+getWidth()/3,getY()+getHeight()/3));
+        contactPoints.add(new Vector2(getX()+getWidth()*2/3,getY()+getHeight()/3));
+        contactPoints.add(new Vector2(getX()+getWidth()/3,getY()+getHeight()*2/3));
+        contactPoints.add(new Vector2(getX()+getWidth()*2/3,getY()+getHeight()*2/3));
+
         Group temp = parent_world.getMap().get_layer(this.getLayer()-1);
         Actor t;
-        // есть ли кто-то на слое под нашими ногами, на ком можно постоять?
-        if((t = temp.hit(getX()+getWidth()/2, getY()+ getHeight()/2, false))!= null){
-            if(t instanceof MapTile) { // ес
-                // если таких ребят нет
-                if (((MapTile) t).is_solid == false || ((MapTile) t).getLayer() != this.getLayer()-1) {
-                    this.position.z -= 1;
-                    parent_world.setCurrent_z(this.getLayer()-1);
-                    //Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " " + ((MapTile) t).getLayer());
+        // есть ли под ногами что-то твердое
+        boolean floorIsSolid = false;
+        int tem = 0;
+
+        for (Vector2 point:contactPoints) {
+            if ((t = temp.hit(point.x, point.y, false)) != null) {
+                if (t instanceof MapTile) { //
+                    if (((MapTile) t).is_solid && ((MapTile) t).getLayer() == this.getLayer() - 1) {
+                        floorIsSolid = true;
+                        tem++;
+                        if(tem > 1)
+                            break;
+                    }
                 }
             }
         }
-        else
-        {
+        // если под ногами ничего нет или точка опоры всего одна, падаем
+        if(!floorIsSolid || tem == 1){
             this.position.z -= 1;
             parent_world.setCurrent_z(this.getLayer()-1);
-            //Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
-        }
+            Gdx.app.log("PLAYER", " DOWN " + parent_world.getCurrent_z() + " " + this.getLayer() + " " + tem);
+        }*/
     }
 
     private void processCollisions() {
@@ -234,9 +250,9 @@ public class Player extends GameObject {
                 collisionVector.x = gameObject.getX() + gameObject.getWidth()/2;
                 collisionVector.y = gameObject.getY() + gameObject.getHeight()/2;
                 // если наш центр пересек границу лестницы, тогда поднимемся на нее
-                Gdx.app.log("PLAYER", collisionVector.toString());
-                if(collisionVector.dst(getX()+getWidth()/2, getY()+getHeight()/2) <= SIZE/2){
-                    Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
+                //Gdx.app.log("PLAYER", collisionVector.toString());
+                if(collisionVector.dst(getX()+getWidth()/2, getY()+getHeight()/2) <= SIZE/1.7f){
+                    //Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
                     ((MapTile) gameObject).active(this, MapTile.Functions.RAISEPLAYER.getFunc());
                     Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
                 }
@@ -245,6 +261,11 @@ public class Player extends GameObject {
 
     }
 
+
+    /**
+     * @param gameObject тот обьект с которым столкнулся наш игрок, исходя их того с какой стороны этого обьекта
+     *                   игрок подошел, делаем откат в туже сторону позиции игрока, чтобы он стоял почти вплотную
+     */
     private void handleCollisionAngle(GameObject gameObject) {
         if(collisionAngle > 45 && collisionAngle <= 135){
             if(velocity.y != 0)

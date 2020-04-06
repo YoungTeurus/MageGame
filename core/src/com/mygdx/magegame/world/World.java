@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionDetector;
+import com.mygdx.magegame.mechanics.DropController;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
@@ -30,6 +31,7 @@ public class World extends Stage {
     public int id_of_current_tileSet = 0; // Текущий тайлсет, выбранный для строительства мира
 
     public CollisionDetector collisionDetector;
+    public DropController dropController;
     // наш игрок
     Player player;
     int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
@@ -64,6 +66,7 @@ public class World extends Stage {
         }
 
         collisionDetector = new CollisionDetector(this);
+        dropController = new DropController(this);
         font = new BitmapFont();
         texts = new Array<>();
         map = new TiledLayer(this);
