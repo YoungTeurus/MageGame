@@ -198,7 +198,6 @@ public class Player extends GameObject implements Dropable {
     @Override
     public void act(float delta) {
         super.act(delta);
-        this.setColor(255,255,255,1);
         // подвинем
         updatePosition(delta);
         // обработаем коллизии, если появились
@@ -267,28 +266,24 @@ public class Player extends GameObject implements Dropable {
         if(collisionAngle > 45 && collisionAngle <= 135){
             if(velocity.y != 0)
                 this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
-            this.setColor(255,0,0,1);
             velocity.y = 0;
         }
         // зашли слева
         else if(collisionAngle > 135 && collisionAngle <= 225){
             if(velocity.x != 0)
                 this.position.x = gameObject.getX() - this.getWidth() - EPS;
-            this.setColor(255,0,0,1);
             velocity.x = 0;
         }
         // зашли снизу
         else if(collisionAngle > 225 && collisionAngle <= 315){
             if(velocity.y != 0)
                 this.position.y = gameObject.getY() - this.getHeight() - EPS;
-            this.setColor(255,0,0,1);
             velocity.y = 0;
         }
         // зашли справа
         else if(collisionAngle > 315 || collisionAngle <= 45){
             if(velocity.x != 0)
                 this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
-            this.setColor(255,0,0,1);
             velocity.x = 0;
         }
     }

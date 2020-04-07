@@ -132,11 +132,9 @@ public class World extends Stage {
     @Override
     public void act(float delta) {
         super.act(delta);
+        getCamera().translate(player.getVelocity().x*delta, player.getVelocity().y*delta, 0);
+        //Gdx.app.log("World", getCamera().position.toString());
         // коллизии обходим перед движением игрока
-       //if(!(collisionDetector.allControlledObjects.isEmpty()))
-       //    for (int i = 0; i < collisionDetector.allControlledObjects.size; i++) {
-       //        if(collisionDetector.checkCollision(collisionDetector.allControlledObjects.get(i)));
-                    //Gdx.app.log("WORLD", "Collision detected");
 
     }
 
