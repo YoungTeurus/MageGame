@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
+import com.mygdx.magegame.mechanics.Spawned;
 import com.mygdx.magegame.objects.additional.AnimatedTextureRegion;
 import com.mygdx.magegame.mechanics.Dropable;
 import com.mygdx.magegame.world.World;
@@ -27,13 +28,15 @@ import java.util.Map;
  Для сетевой игры: нажатия клавиатуры обрабатываем здесь, записывая в массив, что была нажата кнопка, игрок дальше сам
  обработает нужную функцию,
 */
-public class Player extends GameObject implements Dropable {
+public class Player extends GameObject implements Dropable, Spawned {
 
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
     public static final float SPEED = 2f;
     // размер конст
     public static final float SIZE = 1f; // В размерах одной клетки (32*32)
     private static final float EPS = SIZE / 15;
+    private static final float SPAWN_TIME = 10f;
+    private static final int SPAWN_ID = 0;
 
     //состояние
     public enum State {
@@ -250,13 +253,11 @@ public class Player extends GameObject implements Dropable {
                 if(collisionVector.dst(getX()+getWidth()/2, getY()+getHeight()/2) <= SIZE/1.7f){
                     //Gdx.app.log("PLAYER", " contact with" + ((MapTile)gameObject).toString());
                     ((MapTile) gameObject).active(this, MapTile.Functions.RAISEPLAYER.getFunc());
-                    Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
+                    //Gdx.app.log("PLAYER", " UP " + parent_world.getCurrent_z() + " " + this.getLayer() + " ");
                 }
             }
         }
-
     }
-
 
     /**
      * @param gameObject тот обьект с которым столкнулся наш игрок, исходя их того с какой стороны этого обьекта
@@ -323,6 +324,26 @@ public class Player extends GameObject implements Dropable {
         direction.get(direction.put(Keys.STOP, false));
     }
 
+    @Override
+    public void onFallDown() {
+        setVisible(false);
+        setActiv(false);
+        parent_world.spawnController.addGameObjectInQueue(this);
+    }
+
+    @Override
+    public void spawn(SpawnPoint spawnPoint) {
+        setVisible(true);
+        setActiv(true);
+        set_stats();
+        set_pos((int)spawnPoint.position.x, (int)spawnPoint.position.y, (int)spawnPoint.position.z);
+        // временно
+        if(this == parent_world.getPlayer()){
+            parent_world.setCurrent_z(this.getLayer()+1);
+        }
+
+    }
+
     private void set_stats(){
         // Устанавливает начальные значения показателей
         max_hp = current_hp = 100;
@@ -361,7 +382,8 @@ public class Player extends GameObject implements Dropable {
     public  void        setPreviosPoint(Vector3 previosPoint)   {this.previosPoint = previosPoint;}
     public  void        setVelocity(Vector2 velocity)           {this.velocity = velocity;}
     public  void        setAngleGazeDirection(float angle)      {this.angleGazeDirection = angle;}
-
-
-
+    @Override
+    public  float       getSpawnTime()                          {return SPAWN_TIME;}
+    @Override
+    public  int         getIdSpawnedObject()                    {return SPAWN_ID;}
 }

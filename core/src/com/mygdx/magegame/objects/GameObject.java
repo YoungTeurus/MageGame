@@ -11,12 +11,17 @@ public abstract class GameObject extends Actor {
     World parent_world;
     int tileset_id;
     int id;
-    public Circle phusBody;
+    boolean isActiv = true;
+
 
     GameObject(World world){
         parent_world = world;
         position = new Vector3();
         is_camera_oriented = true;
+    }
+
+    public void kill(){
+
     }
 
     @Override
@@ -36,6 +41,14 @@ public abstract class GameObject extends Actor {
 
     public void onCollision(GameObject gameObject){
 
+    }
+
+    public boolean isActiv() {
+        return isActiv;
+    }
+
+    public void setActiv(boolean activ) {
+        isActiv = activ;
     }
 
     @Override

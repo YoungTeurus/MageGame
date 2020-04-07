@@ -3,6 +3,7 @@ package com.mygdx.magegame.world;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -13,9 +14,11 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionDetector;
 import com.mygdx.magegame.mechanics.DropController;
+import com.mygdx.magegame.mechanics.SpawnController;
 import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
+import com.mygdx.magegame.objects.SpawnPoint;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -33,8 +36,10 @@ public class World extends Stage {
 
     public CollisionDetector collisionDetector;
     public DropController dropController;
+    public SpawnController spawnController;
     // наш игрок
     Player player;
+    public RandomXS128 random;
     int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
     // массив объектов на карте
     TiledLayer map;
@@ -58,6 +63,8 @@ public class World extends Stage {
     public World(int worldWidth, int worldHeight, boolean add_player){
         super(new ExtendViewport(worldWidth, worldHeight));
 
+        random = new RandomXS128();
+
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
 
@@ -68,6 +75,7 @@ public class World extends Stage {
 
         collisionDetector = new CollisionDetector(this);
         dropController = new DropController(this);
+        spawnController = new SpawnController(this);
         font = new BitmapFont();
         texts = new Array<>();
         map = new TiledLayer(this);
@@ -126,6 +134,9 @@ public class World extends Stage {
         if (add_player){
             player = new Player(this, 2,6,1, 0);
             collisionDetector.addControlledObject(player, 1);
+            // тестовая версия
+            spawnController.addSpawner(new SpawnPoint(this, 0, 4, 6, 1));
+            spawnController.addSpawner(new SpawnPoint(this, 0, 3, 4, 4));
         }
     }
 
@@ -133,7 +144,8 @@ public class World extends Stage {
     public void act(float delta) {
         super.act(delta);
         getCamera().translate(player.getVelocity().x*delta, player.getVelocity().y*delta, 0);
-        //Gdx.app.log("World", getCamera().position.toString());
+        spawnController.spawn();
+        //Gdx.app.log("World", random.nextInt() + " " + random.nextInt() % 2);
         // коллизии обходим перед движением игрока
 
     }

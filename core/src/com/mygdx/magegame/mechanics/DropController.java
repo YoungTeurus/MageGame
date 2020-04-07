@@ -67,9 +67,17 @@ public class DropController {
      *                   если этот обьект был текущим игроком мира, то камера опускается вместе с ним
      */
     public void dropGameObject(GameObject gameObject){
+        if(gameObject.position.z - 1 < 0 && gameObject.isActiv()){
+            if(gameObject instanceof Dropable){
+                ((Dropable) gameObject).onFallDown();
+            }
+        }
         gameObject.position.z -= 1;
         if(gameObject == world.getPlayer())
             world.setCurrent_z(gameObject.getLayer()-1);
         //Gdx.app.log("PLAYER", " DOWN " + world.getCurrent_z() + " " + gameObject.getLayer() + " ");
+        // если упали за границу, смерт
+
+
     }
 }

@@ -35,6 +35,8 @@ public class CollisionDetector {
     public Array <GameObject> checkCollisions(GameObject gameObject)
     {
         contactedObjects.clear();
+        if(!gameObject.isActiv())
+            return contactedObjects;
         CollisionMap currentCollisionMap = this.getLayer(gameObject.getLayer());
         for (GameObject obj: currentCollisionMap.getAllStaticObjects()) {
             // обновили прямоугольнички относительно наших 2-х объектов
