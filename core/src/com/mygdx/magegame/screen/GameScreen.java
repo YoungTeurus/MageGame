@@ -5,11 +5,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.mygdx.magegame.MageGame;
+import com.mygdx.magegame.objects.TextObject;
 import com.mygdx.magegame.world.World;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -30,11 +32,13 @@ public class GameScreen implements Screen, InputProcessor {
     boolean need_to_update_interface; // Если этот флаг - false, значит не перерисовываем интерфейс
     OrthographicCamera c;
 
+    BitmapFont font;
+    String clock = "12:34";
+
     public GameScreen(final MageGame game){
         this.game = game;
         fbo = new FrameBuffer(Pixmap.Format.RGBA8888,Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         fb = new SpriteBatch();
-        //screen_interface = new Pixmap(window_w, window_h, Pixmap.Format.RGBA8888);
 
         // Всё ниже этого - создание ShapeDrawer
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -50,6 +54,8 @@ public class GameScreen implements Screen, InputProcessor {
         c = new OrthographicCamera();
         c.setToOrtho(true, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.getBatch().setProjectionMatrix(c.combined);
+
+        font = new BitmapFont();
 
         // Создание мира
         world = new World(world_w,world_h,true);
@@ -77,9 +83,7 @@ public class GameScreen implements Screen, InputProcessor {
         world.act();
 
         // Ниже будет отрисовываться интерфейс
-        //game.getBatch().begin();
         draw_interface();
-        //game.getBatch().end();
 
         // Обработка нажатий на клавиатуру
         if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
@@ -123,6 +127,7 @@ public class GameScreen implements Screen, InputProcessor {
             fbo.begin();
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             fb.begin();
+            // Секторы здоровья и маны
             drawer.setColor(0.85f, 0.1f, 0.1f, 1f);
             drawer.sector(0, 0, (float) window_w / 10, 0, (float) (3.15 / 2));
             drawer.setColor(0.1f, 0.35f, 0.85f, 1f);
@@ -139,9 +144,63 @@ public class GameScreen implements Screen, InputProcessor {
             drawer.filledRectangle(0, (window_w / 10f )* percent_of_hp, window_w/10f, window_h);
             drawer.filledRectangle(window_w*0.9f,(window_w / 10f )* percent_of_mp,window_w/10f, window_h);
 //
+
+            drawer.getBatch().setBlendFunction(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+            drawer.setColor(0.45f, 0.45f, 0.45f, 1f);
+            drawer.sector(0, 0, window_w / 9.5f, 0, (float) (3.15 / 2));
+            drawer.sector(window_w, 0, window_w / 9.5f, (float) (3.14 / 2), 3.15f);
+
             drawer.getBatch().disableBlending();
+
+            // Прямоугольник для заклинаний
+            int width_of_spells = 400;
+            int height_of_spells = 64;
+
             drawer.setColor(0.6f, 0.6f, 0.6f, 1f);
-            drawer.rectangle(200, 0, 400, 50);
+            drawer.filledRectangle(window_w/2f - (width_of_spells/2f), 0, width_of_spells, height_of_spells);
+
+            drawer.getBatch().enableBlending();
+            drawer.getBatch().setBlendFunction(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+            drawer.setColor(0.5f, 0.5f, 0.5f, 1f);
+            drawer.filledCircle(window_w/2f - (width_of_spells/2f) - 25, 25, height_of_spells * 0.85f);
+
+            drawer.getBatch().disableBlending();
+
+            // Квадраты для заклинаний
+            drawer.setColor(0.2f, 0.2f, 0.2f, 0.95f);
+
+            int size_of_spell = 64; // Размер квадрата
+            float spacing = (width_of_spells-(64*4))/5f; // Расстояние между элементами
+
+            for(int i = 0;i<4;i++){
+                drawer.filledRectangle(window_w/2f - (width_of_spells/2f) + (size_of_spell + spacing)*i + spacing, 0, 64, 64);
+            }
+
+            // Прямоугольник для камней
+            drawer.setColor(0.4f, 0.4f, 0.4f, 0.65f);
+            drawer.filledRectangle(window_w/2f - 75, height_of_spells,150,35);
+            // Кружки для камней
+            drawer.setColor(0.2f, 0.2f, 0.2f, 0.95f);
+
+            int radius_for_gem = 16; // Размер кружка
+            spacing = 10; // Расстояние между элементами
+            for(int i = -1; i <=1; i++){
+                drawer.filledCircle(window_w/2f + (radius_for_gem*2 + spacing)*i, 65+(35/2f),radius_for_gem); // В один такой кружок можно будет разместить текстурку 32*32
+            }
+
+            // Прямоугольник для времени
+            int width_of_clock = 120;
+            int height_of_clock = 50;
+            drawer.setColor(0.9f, 0.9f, 0.9f, 0.65f);
+            drawer.filledRectangle(window_w/2f - (width_of_clock/2f), window_h - height_of_clock,width_of_clock,height_of_clock);
+
+            fb.enableBlending();
+            fb.setBlendFunction(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+            font.draw(fb,clock,window_w/2f - (width_of_clock/2f),window_h - (height_of_clock/2f),width_of_clock,1,false);
+
+            fb.disableBlending();
+
             fb.end();
             fbo.end();
 
@@ -163,6 +222,8 @@ public class GameScreen implements Screen, InputProcessor {
         world.getCamera().viewportWidth = width;
         world.getCamera().viewportHeight = height;
         world.getViewport().update(width, height, false);
+        window_w = width;
+        window_h = height;
     }
 
     @Override
