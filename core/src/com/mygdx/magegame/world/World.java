@@ -142,7 +142,9 @@ public class World extends Stage {
         super.act(delta);
         getCamera().translate(player.getVelocity().x*delta, player.getVelocity().y*delta, 0);
         spawnController.spawn();
-        //Gdx.app.log("World", random.nextInt() + " " + random.nextInt() % 2);
+
+        //Gdx.app.log("World", player.position.toString());
+
         // коллизии обходим перед движением игрока
 
     }

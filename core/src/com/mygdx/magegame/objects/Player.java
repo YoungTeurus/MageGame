@@ -28,10 +28,9 @@ import java.util.Map;
  Для сетевой игры: нажатия клавиатуры обрабатываем здесь, записывая в массив, что была нажата кнопка, игрок дальше сам
  обработает нужную функцию,
 */
-public class Player extends GameObject implements Dropable, Spawned {
+public class Player extends MovebleObject implements Dropable, Spawned {
 
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
-    public static final float SPEED = 2f;
     // размер конст
     public static final float SIZE = 1f; // В размерах одной клетки (32*32)
     private static final float EPS = SIZE / 15;
@@ -55,10 +54,7 @@ public class Player extends GameObject implements Dropable, Spawned {
         direction.put(Keys.ABILITY_6, false);
     };
 
-    //используется для вычисления движения
-    Vector2 velocity = new Vector2();
-    //конечная точка пути
-    Vector3 endPoint = new Vector3();
+
     // предыдущая точка из которой перешли
     Vector3 previosPoint = new Vector3();
     // используется для нахождения угла под которым коснулись
@@ -92,6 +88,7 @@ public class Player extends GameObject implements Dropable, Spawned {
         set_pos(x, y, z);
         this.type = type;
         set_stats();
+        setSPEED(2f);
         set_texture();
         setRotation(270);
         setOrigin(SIZE/2, SIZE/2);
@@ -139,16 +136,12 @@ public class Player extends GameObject implements Dropable, Spawned {
 
     public void handleMouseInput(Vector2 mouseCoords){
         //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
-        endPoint.x = mouseCoords.x;
-        endPoint.y = mouseCoords.y;
-        tempMouseCoords.set(mouseCoords);
-        tempMouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
         if(state != State.WALKING)
             state = State.WALKING;
         else // если шли до этого
             resetVelocity();
-        velocity.x += SPEED * Math.cos(tempMouseCoords.angle()/180.0*3.14);
-        velocity.y += SPEED * Math.sin(tempMouseCoords.angle()/180.0*3.14);
+        moveTo(mouseCoords.x, mouseCoords.y);
+
         updateAngleDirection();
 
         // Тупо для теста
@@ -201,10 +194,6 @@ public class Player extends GameObject implements Dropable, Spawned {
     @Override
     public void act(float delta) {
         super.act(delta);
-        // подвинем
-        updatePosition(delta);
-        // обработаем коллизии, если появились
-        processCollisions();
         // обрабатываем падение, если вышли с твердого тайла
         processDrop();
     }
@@ -212,15 +201,6 @@ public class Player extends GameObject implements Dropable, Spawned {
     public void processDrop() {
         if(parent_world.dropController.checkFloorUnderObject(this) == false){
             parent_world.dropController.dropGameObject(this);
-        }
-    }
-
-    private void processCollisions() {
-        Array<GameObject> objs = parent_world.collisionDetector.checkCollisions(this);
-        if( objs.size > 0 ){
-            for (GameObject obj:objs) {
-                onCollision(obj);
-            }
         }
     }
 
@@ -294,7 +274,7 @@ public class Player extends GameObject implements Dropable, Spawned {
         return x > 0 && x < getWidth() && y> 0 && y < getHeight()? this:null;
     }
 
-    private void updatePosition(float delta) {
+    public boolean updatePosition(float delta) {
         if(state == State.WALKING)
         {
             //Gdx.app.log("PLAYER",  position.toString()+" "+endPoint.toString() + " " + velocity.toString());
@@ -305,15 +285,17 @@ public class Player extends GameObject implements Dropable, Spawned {
             if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
                 state = State.NONE;
                 resetVelocity();
+                return true;
             }
         }
+        return false;
     }
 
     public void updateAngleGlazDirection(Vector2 mouseCoords){
         tempMouseCoords.set(mouseCoords);
         tempMouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
         setAngleGazeDirection(tempMouseCoords.angle());
-        Gdx.app.log("Player", tempMouseCoords.angle()+ " " + getAngleGazeDirection() + "" + getRotation());
+        //Gdx.app.log("Player", tempMouseCoords.angle()+ " " + getAngleGazeDirection() + "" + getRotation());
     }
 
     public void StopPressed() {
@@ -339,7 +321,7 @@ public class Player extends GameObject implements Dropable, Spawned {
         set_pos((int)spawnPoint.position.x, (int)spawnPoint.position.y, (int)spawnPoint.position.z);
         // временно
         if(this == parent_world.getPlayer()){
-            parent_world.setCurrent_z(this.getLayer()+1);
+            parent_world.setCurrent_z(this.getLayer()-1);
         }
 
     }
