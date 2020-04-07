@@ -177,18 +177,22 @@ public class World extends Stage {
         super.touchDragged(screenX, screenY, pointer);
         // если зажата правая кнопка мышки, и она перемещается, за ней едет наш персонаж
         // если игрок остановил персонажа принудительно, мы
+        updateMouseCoords(screenX, screenY);
         if(mouseRightButtonPressed &&
                 (player.getState() == Player.State.WALKING || player.getState() == Player.State.NONE)) {
-            updateMouseCoords(screenX, screenY);
             player.handleMouseInput(mouseCoords2);
         }
+        player.updateAngleGlazDirection(mouseCoords2);
         return true;
     }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
         //при движении мышью
-        return super.mouseMoved(screenX, screenY);
+        super.mouseMoved(screenX, screenY);
+        updateMouseCoords(screenX, screenY);
+        player.updateAngleGlazDirection(mouseCoords2);
+        return true;
     }
 
     private void moveSelected(Vector2 mouseCoords){
