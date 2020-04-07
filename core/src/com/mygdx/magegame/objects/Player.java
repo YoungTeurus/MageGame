@@ -60,10 +60,13 @@ public class Player extends GameObject implements Dropable {
     Vector3 previosPoint = new Vector3();
     // используется для нахождения угла под которым коснулись
     Vector2 collisionVector = new Vector2();
+    private Vector2 tempMouseCoords = new Vector2();
     // каким углом модельки коснулись
     float collisionAngle;
     // угол, по которому движется
     float angleDirection;
+    // угол, куда смотрит
+    float angleGazeDirection;
 
     TextureRegion object_texture_region_body; // То, что рисуется
     TextureRegion object_texture_region_head;
@@ -135,13 +138,14 @@ public class Player extends GameObject implements Dropable {
         //Gdx.app.log("Player",mouseCoords.toString() + position.toString()  + mouseCoords.angle());
         endPoint.x = mouseCoords.x;
         endPoint.y = mouseCoords.y;
-        mouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
+        tempMouseCoords.set(mouseCoords);
+        tempMouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
         if(state != State.WALKING)
             state = State.WALKING;
         else // если шли до этого
             resetVelocity();
-        velocity.x += SPEED * Math.cos(mouseCoords.angle()/180.0*3.14);
-        velocity.y += SPEED * Math.sin(mouseCoords.angle()/180.0*3.14);
+        velocity.x += SPEED * Math.cos(tempMouseCoords.angle()/180.0*3.14);
+        velocity.y += SPEED * Math.sin(tempMouseCoords.angle()/180.0*3.14);
         updateAngleDirection();
 
         // Тупо для теста
@@ -188,20 +192,18 @@ public class Player extends GameObject implements Dropable {
                 getScaleX(), getScaleY(), getRotation());
         batch.draw(object_texture_region_head, getX(), getY(),
                 getOriginX(), getOriginY(), getWidth(), getHeight(),
-                getScaleX(), getScaleY(), getRotation());
+                getScaleX(), getScaleY(), angleGazeDirection);
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        this.setColor(255,255,255,1);
         // подвинем
         updatePosition(delta);
         // обработаем коллизии, если появились
         processCollisions();
         // обрабатываем падение, если вышли с твердого тайла
         processDrop();
-
     }
 
     public void processDrop() {
@@ -264,28 +266,24 @@ public class Player extends GameObject implements Dropable {
         if(collisionAngle > 45 && collisionAngle <= 135){
             if(velocity.y != 0)
                 this.position.y = gameObject.getY()+gameObject.getHeight() + EPS;
-            this.setColor(255,0,0,1);
             velocity.y = 0;
         }
         // зашли слева
         else if(collisionAngle > 135 && collisionAngle <= 225){
             if(velocity.x != 0)
                 this.position.x = gameObject.getX() - this.getWidth() - EPS;
-            this.setColor(255,0,0,1);
             velocity.x = 0;
         }
         // зашли снизу
         else if(collisionAngle > 225 && collisionAngle <= 315){
             if(velocity.y != 0)
                 this.position.y = gameObject.getY() - this.getHeight() - EPS;
-            this.setColor(255,0,0,1);
             velocity.y = 0;
         }
         // зашли справа
         else if(collisionAngle > 315 || collisionAngle <= 45){
             if(velocity.x != 0)
                 this.position.x = gameObject.getX()+ gameObject.getWidth() + EPS;
-            this.setColor(255,0,0,1);
             velocity.x = 0;
         }
     }
@@ -308,6 +306,13 @@ public class Player extends GameObject implements Dropable {
                 resetVelocity();
             }
         }
+    }
+
+    public void updateAngleGlazDirection(Vector2 mouseCoords){
+        tempMouseCoords.set(mouseCoords);
+        tempMouseCoords.sub(getX() + getOriginX(), getY() + getOriginY());
+        setAngleGazeDirection(tempMouseCoords.angle());
+        Gdx.app.log("Player", tempMouseCoords.angle()+ " " + getAngleGazeDirection() + "" + getRotation());
     }
 
     public void StopPressed() {
@@ -351,7 +356,12 @@ public class Player extends GameObject implements Dropable {
     public  State       getState()                              {return state;}
     public  Vector3     getPreviosPoint()                       {return previosPoint;}
     public  Vector3     getPosition()                           {return position;}
+    public  float       getAngleGazeDirection()                 {return angleGazeDirection;}
 
     public  void        setPreviosPoint(Vector3 previosPoint)   {this.previosPoint = previosPoint;}
     public  void        setVelocity(Vector2 velocity)           {this.velocity = velocity;}
+    public  void        setAngleGazeDirection(float angle)      {this.angleGazeDirection = angle;}
+
+
+
 }
