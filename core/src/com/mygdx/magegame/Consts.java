@@ -1,8 +1,8 @@
 package com.mygdx.magegame;
 
 public class Consts {
-    public static final int window_w = 800; // Размеры стандартного окна
-    public static final int window_h = 600;
+    public static int window_w = 800; // Размеры стандартного окна
+    public static int window_h = 600;
 
     public static int world_w = 10; // "Приближение" камеры
     public static int world_h = 10;
