@@ -19,13 +19,10 @@ import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
 import com.mygdx.magegame.objects.SpawnPoint;
+import com.mygdx.magegame.objects.magic.SimpleMagicObject;
 
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.mygdx.magegame.Consts.*;
 import static com.mygdx.magegame.WorkWithFiles.get_params_from_file;
@@ -294,6 +291,15 @@ public class World extends Stage {
                     collisionDetector.addStaticObject(new_object, (int) new_object.position.z);
                 }
                 add_object(new_object);
+            }
+        }
+    }
+
+    public void cast_spell(){
+        SimpleMagicObject temp = new SimpleMagicObject(this,player);
+        if (temp.addOnCast("ChangeMp", "5") && temp.addOnCast("ChangeHp", "-10")){
+            if(temp.addIf("HpEqualMoreThan","11")){
+                temp.onCast();
             }
         }
     }

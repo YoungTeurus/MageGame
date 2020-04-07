@@ -103,6 +103,10 @@ public class GameScreen implements Screen, InputProcessor {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             world.getCamera().translate(0, -1, 0);
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+            world.cast_spell();
+            update_interface();
+        }
         if (Gdx.input.isKeyPressed(Input.Keys.P)) {
             world.getPlayer().current_hp = Math.max(world.getPlayer().current_hp - 3, 0);
             update_interface();

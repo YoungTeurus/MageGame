@@ -14,7 +14,7 @@ public abstract class GameObject extends Actor {
     boolean isActiv = true;
 
 
-    GameObject(World world){
+    public GameObject(World world){
         parent_world = world;
         position = new Vector3();
         is_camera_oriented = true;
