@@ -8,7 +8,7 @@ import com.mygdx.magegame.world.World;
 public abstract class GameObject extends Actor {
     public Vector3 position;
     boolean is_camera_oriented;
-    World parent_world;
+    public World parent_world;
     int tileset_id;
     int id;
     boolean isActiv = true;
@@ -32,6 +32,10 @@ public abstract class GameObject extends Actor {
     public void set_pos(int x, int y, int z) {
         // Устанавилвает позицию вектора положения
         position.set(x, y, z);
+    }
+
+    public void set_pos(float x,float y,float z){
+        position.set(x,y,z);
     }
 
     // вернет индекс слоя, на котором находится обьект

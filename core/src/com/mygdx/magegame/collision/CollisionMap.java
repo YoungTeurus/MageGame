@@ -29,6 +29,10 @@ public class CollisionMap {
         allDynamicObjects.add(gameObject);
     }
 
+    public void removeDynamic(GameObject gameObject){
+        allDynamicObjects.removeValue(gameObject, true);
+    }
+
     public void addControlled(GameObject gameObject){
         allControlledObjects.add(gameObject);
     }

@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.world.World;
 
-public class MovebleObject extends GameObject{
+public class MovableObject extends GameObject{
 
     float SPEED = 2f;
     static final float EPS = 0.000001f;
@@ -16,7 +16,7 @@ public class MovebleObject extends GameObject{
     Vector3 endPoint = new Vector3();
 
     Vector2 temp = new Vector2();
-    public MovebleObject(World world) {
+    public MovableObject(World world) {
         super(world);
     }
 
@@ -36,6 +36,7 @@ public class MovebleObject extends GameObject{
     // перемещает к конечной точке, если ее достигли, вернет тру
     public boolean updatePosition(float delta){
         this.position.add(velocity.x*delta, velocity.y*delta, 0);
+        this.setPosition(position.x,position.y);
         if(endPoint.epsilonEquals(getX()+getOriginX(), getY()+getOriginY(), 0, EPS)) {
             velocity.set(0,0);
             return  true;

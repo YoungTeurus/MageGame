@@ -53,6 +53,21 @@ public class CollisionDetector {
                 contactedObjects.add(obj);
             }
         }
+        for (GameObject obj: currentCollisionMap.getAllControlledObjects()) {
+            // обновили прямоугольнички относительно наших 2-х объектов
+            updateRects(gameObject, obj);
+            //if(Intersector.intersectSegmentRectangle(rect1.x, rect1.y,rect1.width+rect1.x,rect1.height+rect1.y, rect2)) {
+            // для игрока сейчас используем кружочек, а все остальное прямоугольнички
+            if(Intersector.overlaps(circle, rect2)){
+                // действия при коллизии
+                //event.setCollidedGameObject(obj);
+                //event.setType(CollisionEvent.EventType.ON_COLLISION);
+                //event.setObjectType(CollisionEvent.CollisionObjectType.STATIC);
+                //gameObject.fire(event);
+                //Gdx.app.log("COLLISION", rect1.toString() + rect2.toString());
+                contactedObjects.add(obj);
+            }
+        }
         return contactedObjects;
     }
 
@@ -91,6 +106,10 @@ public class CollisionDetector {
 
     public void addDynamicObject(GameObject gameObject, int layer){
         this.getLayer(layer).addDynamic(gameObject);
+    }
+
+    public void removeDynamicObject(GameObject gameObject, int layer){
+        this.getLayer(layer).removeDynamic(gameObject);
     }
 
     public void addControlledObject(GameObject gameObject, int layer){

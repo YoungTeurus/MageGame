@@ -1,4 +1,4 @@
-package com.mygdx.magegame.mechanics;
+package com.mygdx.magegame.mechanics.magic;
 
 import com.mygdx.magegame.objects.Player;
 
@@ -6,7 +6,7 @@ import java.text.ParseException;
 
 public class MagicOnCastFunctions {
     // Функции предназначенные для onCast должны принимать 3 параметра:
-    // Player - тот игрок, котороый кастанул заклинание
+    // Player - тот игрок, который кастанул заклинание
     // String - строка параметров для функции
     // boolean - флаг проверки строки параметров на правильность
 

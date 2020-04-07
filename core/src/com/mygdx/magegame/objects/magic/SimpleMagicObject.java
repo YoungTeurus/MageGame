@@ -1,16 +1,16 @@
 package com.mygdx.magegame.objects.magic;
 
 import com.badlogic.gdx.utils.Array;
-import com.mygdx.magegame.mechanics.MagicIfCanCastFunctions;
-import com.mygdx.magegame.mechanics.MagicOnCastFunctions;
-import com.mygdx.magegame.objects.GameObject;
+import com.mygdx.magegame.mechanics.magic.MagicIfCanCastFunctions;
+import com.mygdx.magegame.mechanics.magic.MagicOnCastFunctions;
+import com.mygdx.magegame.objects.MovableObject;
 import com.mygdx.magegame.objects.Player;
 import com.mygdx.magegame.world.World;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class SimpleMagicObject extends GameObject implements SimpleMagic {
+public class SimpleMagicObject extends MovableObject implements SimpleMagic {
 
     Player parent_player; // Игрок, который скастовал данное заклинание
     Array<Method> onCastMethods_array; // Методы, вызываемые при касте

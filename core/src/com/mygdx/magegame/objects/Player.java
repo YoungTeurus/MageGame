@@ -1,6 +1,5 @@
 package com.mygdx.magegame.objects;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
@@ -10,7 +9,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.utils.Array;
 import com.mygdx.magegame.TileSet;
 import com.mygdx.magegame.collision.CollisionEvent;
 import com.mygdx.magegame.collision.CollisionListener;
@@ -28,7 +26,7 @@ import java.util.Map;
  Для сетевой игры: нажатия клавиатуры обрабатываем здесь, записывая в массив, что была нажата кнопка, игрок дальше сам
  обработает нужную функцию,
 */
-public class Player extends MovebleObject implements Dropable, Spawned {
+public class Player extends MovableObject implements Dropable, Spawned {
 
     // скорость движения, мб её будем менять от каких-нибудь тапочек, так что не константа
     // размер конст

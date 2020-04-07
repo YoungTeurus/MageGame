@@ -1,4 +1,4 @@
-package com.mygdx.magegame.mechanics;
+package com.mygdx.magegame.mechanics.magic;
 
 import com.mygdx.magegame.objects.Player;
 

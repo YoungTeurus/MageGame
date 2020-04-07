@@ -19,6 +19,7 @@ import com.mygdx.magegame.objects.GameObject;
 import com.mygdx.magegame.objects.MapTile;
 import com.mygdx.magegame.objects.Player;
 import com.mygdx.magegame.objects.SpawnPoint;
+import com.mygdx.magegame.objects.magic.BulletMagicObject;
 import com.mygdx.magegame.objects.magic.SimpleMagicObject;
 
 import java.io.FileWriter;
@@ -41,6 +42,8 @@ public class World extends Stage {
     // массив объектов на карте
     TiledLayer map;
     Array<GameObject> texts;
+
+    public Array<GameObject> objects_to_delete; // Объекты, которые нужно удалить при следующей проверке
 
     // ширина и высота мира
     int worldWidth;
@@ -75,6 +78,7 @@ public class World extends Stage {
         spawnController = new SpawnController(this);
         font = new BitmapFont();
         texts = new Array<>();
+        objects_to_delete = new Array<>();
         map = new TiledLayer(this);
         addActor(map);
 
@@ -142,6 +146,12 @@ public class World extends Stage {
         super.act(delta);
         getCamera().translate(player.getVelocity().x*delta, player.getVelocity().y*delta, 0);
         spawnController.spawn();
+
+        for(GameObject go: objects_to_delete){
+            collisionDetector.removeDynamicObject(go, (int) go.position.z);
+            getRoot().removeActor(go);
+            objects_to_delete.removeValue(go, true);
+        }
 
         //Gdx.app.log("World", player.position.toString());
 
@@ -298,11 +308,18 @@ public class World extends Stage {
     }
 
     public void cast_spell(){
-        SimpleMagicObject temp = new SimpleMagicObject(this,player);
-        if (temp.addOnCast("ChangeMp", "5") && temp.addOnCast("ChangeHp", "-10")){
-            if(temp.addIf("HpEqualMoreThan","11")){
-                temp.onCast();
-            }
+        // SimpleMagicObject temp = new SimpleMagicObject(this,player);
+        // if (temp.addOnCast("ChangeMp", "5") && temp.addOnCast("ChangeHp", "-10")){
+        //     if(temp.addIf("HpEqualMoreThan","11")){
+        //         temp.onCast();
+        //     }
+        // }
+
+        BulletMagicObject temp = new BulletMagicObject(this,player);
+        if (temp.addIf("MpEqualMoreThan", "50")){
+            //getRoot().addActor();
+            addActor(temp);
+            temp.start_moving();
         }
     }
 
