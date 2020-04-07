@@ -13,7 +13,7 @@ public abstract class GameObject extends Actor {
     int id;
     public Circle phusBody;
 
-    GameObject(World world){
+    public GameObject(World world){
         parent_world = world;
         position = new Vector3();
         is_camera_oriented = true;
