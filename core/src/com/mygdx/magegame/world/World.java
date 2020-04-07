@@ -37,6 +37,7 @@ public class World extends Stage {
     public SpawnController spawnController;
     // наш игрок
     Player player;
+    Player player2;
     public RandomXS128 random;
     int current_z; // Текущий слой, на котором находится игрок (камера?). Может быть и не нужна, но пока что пусть будет
     // массив объектов на карте
@@ -134,7 +135,10 @@ public class World extends Stage {
         this.load(".//core//assets//maps//" + "map_0_new.txt");
         if (add_player){
             player = new Player(this, 2,6,1, 0);
+            player2 = new Player(this, 4,6,1,0);
             collisionDetector.addControlledObject(player, 1);
+            collisionDetector.addControlledObject(player2,1);
+            addActor(player2);
             // тестовая версия
             spawnController.addSpawner(new SpawnPoint(this, 0, 4, 6, 1));
             spawnController.addSpawner(new SpawnPoint(this, 0, 3, 4, 4));
@@ -316,7 +320,7 @@ public class World extends Stage {
         // }
 
         BulletMagicObject temp = new BulletMagicObject(this,player);
-        if (temp.addIf("MpEqualMoreThan", "50")){
+        if (temp.addOnCollision("ChangeHp","-5")){
             //getRoot().addActor();
             addActor(temp);
             temp.start_moving();
