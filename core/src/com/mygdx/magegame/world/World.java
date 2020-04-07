@@ -286,7 +286,9 @@ public class World extends Stage {
     public void cast_spell(){
         SimpleMagicObject temp = new SimpleMagicObject(this,player);
         if (temp.addOnCast("ChangeMp", "5") && temp.addOnCast("ChangeHp", "-10")){
-            temp.onCast();
+            if(temp.addIf("HpEqualMoreThan","11")){
+                temp.onCast();
+            }
         }
     }
 

@@ -2,20 +2,16 @@ package com.mygdx.magegame.mechanics;
 
 import com.mygdx.magegame.objects.Player;
 
-import java.text.ParseException;
-
-public class MagicFunctions {
-    // Функция предназначенная для onCast должна принимать 3 параметра:
-    // Player - тот игрок, котороый кастанул заклинание
+public class MagicIfCanCastFunctions {
+    // Функции предназначенные для проверки возможности каста заклинания должны принимать 3 параметра:
+    // Player - тот игрок, для которого проверяются условия
     // String - строка параметров для функции
     // boolean - флаг проверки строки параметров на правильность
 
     // Если флаг выставлен в true, то при вызове функции будет выполнено не основное действие, а проверка на наличие всех
     // необходимых параметров в строке параметров. Функция вернёт true - если проверка пройдена, false - если нет.
-    // При обычном выполнении функция не должна возвращать никакое полезное значение. (Она будет возвращать true, однако
-    // при любом исходе выполнения.)
 
-    public static boolean ChangeHp(Player player, String difference, boolean check){
+    public static boolean HpEqualMoreThan(Player player, String difference, boolean check){
         if (check == true){
             // Проверка правильности переданных параметров.
             // В данной функции используется один параметр - int, поэтому пытаемся преобразовать строку к int-у.
@@ -27,16 +23,14 @@ public class MagicFunctions {
                 return false;
             }
         }
-        int int_difference = Integer.parseInt(difference);
-        if (int_difference < 0) {
-            player.current_hp = Math.max(0, player.current_hp + int_difference);
+        int minimal_hp = Integer.parseInt(difference);
+        if (player.current_hp >= minimal_hp) {
             return true;
         }
-        player.current_hp = Math.min(player.max_hp, player.current_hp + int_difference);
-        return true;
+        return false;
     }
 
-    public static boolean ChangeMp(Player player, String difference, boolean check){
+    public static boolean MpEqualMoreThan(Player player, String difference, boolean check){
         if (check == true){
             // Проверка правильности переданных параметров.
             // В данной функции используется один параметр - int, поэтому пытаемся преобразовать строку к int-у.
@@ -48,12 +42,10 @@ public class MagicFunctions {
                 return false;
             }
         }
-        int int_difference = Integer.parseInt(difference);
-        if (int_difference < 0) {
-            player.current_mp = Math.max(0, player.current_mp - int_difference);
+        int minimal_mp = Integer.parseInt(difference);
+        if (player.current_mp >= minimal_mp) {
             return true;
         }
-        player.current_mp = Math.min(player.max_mp, player.current_mp + int_difference);
-        return true;
+        return false;
     }
 }

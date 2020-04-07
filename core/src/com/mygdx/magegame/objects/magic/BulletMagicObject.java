@@ -14,9 +14,4 @@ public class BulletMagicObject extends SimpleMagicObject implements BulletMagic 
     public void onCollision(GameObject collision_target) {
 
     }
-
-    @Override
-    public void onCast() {
-
-    }
 }
